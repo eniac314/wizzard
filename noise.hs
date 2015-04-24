@@ -156,7 +156,7 @@ main = SDL.withInit [SDL.InitEverything] $ do
        SDL.flip screen
        
 
-
+       -- this is a test
        --let mapped = map (\(x,y,n) -> (fI.toScale $ n)) pts
 
        --putStrLn $ "Nbr of distinct values: " ++ show (Set.size $ Set.fromList vals)
