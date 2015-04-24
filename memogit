@@ -1,3 +1,5 @@
+git status: infos about what's tracked
+
 git clone https://github.com/eniac314/wizzard : get remote data (first time only)
 git add -A : all everything to the staging area
 git commit -m "comment" : commit all staged items
