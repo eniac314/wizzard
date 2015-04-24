@@ -1,0 +1,11 @@
+git clone https://github.com/eniac314/wizzard : get remote data (first time only)
+git add -A : all everything to the staging area
+git commit -m "comment" : commit all staged items
+
+git fetch origin: fecth remote data (no incorporation)
+git diff origin/master: display differences
+git merge origin/master: merge changes
+
+git pull origin master:  Incorporates changes from a remote repository 
+
+git push origin master: push commited changes to remote dir
