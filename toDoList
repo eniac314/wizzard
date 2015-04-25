@@ -7,6 +7,8 @@
 
 
 ## Tiler.hs:
+# trouver un reglage satifaisant de noise pour générer des continents
+
 # modifier tiler de façon a pouvoir se déplacer dans un chunk 
 
 # modifier tiler de façon à pouvoir gérer des sprites (cyclic list de tiles?) 

@@ -10,6 +10,7 @@ import System.Random
 import System.Environment
 import qualified Data.Vector as Vec
 import Noise
+import Data.Graph.Inductive
 
 
 fI = fromIntegral
@@ -147,12 +148,12 @@ main = SDL.withInit [SDL.InitEverything] $ do
        gen <- getStdGen
        
        let (seed,_) = random gen
-           land = matMap noise2Tile (noiseMat 18 0.5 200 100 7 seed)
+           land = matMap noise2Tile (noiseMat 18 0.2 200 150 7 seed)
        
        args <- getArgs
        
        screen <- SDL.setVideoMode width height 32 [SDL.SWSurface]
-       tiles <- loadImage "bigAlphaTiles2.png"
+       tiles <- loadImage "bigAlphaTiles.png"
        
        let landList = cycle [land]
            world = (landList, tiles, screen)
