@@ -48,12 +48,24 @@ data Sys = Sys { width :: Int
                , fps :: SDLF.FPSManager
                }
 
+data ChunkType = Islands | Continent | Mountains
+
+data Chunk = Chunk { chType :: ChunkType
+                   , chPos :: (Int,Int)
+                   , chLand :: Mat [Tile]
+                   , canvasSize :: (Int,Int)
+                   }
+
 data World = World { sys :: Sys
                    , screen :: SDL.Surface
                    , tiles :: SDL.Surface
-                   , chunk :: Mat [Tile]
-                   , chunks :: [Mat [Tile]]
+                   , chunk :: Chunk
+                   , chunks :: [Chunk]
                    }
+
+data Direction = Lefty | Righty| Up | Down
+
+{-# LANGUAGE BangPatterns #-}
 
 --------------------------------------------------------------------------------------------------------
 {- misc helper functions-}
@@ -124,15 +136,21 @@ applyTile tile (x,y) src dest =
         tileRect = getTile tile
     in SDL.blitSurface src tileRect dest offset
 
-applyTileMat :: Mat [Tile] -> SDL.Surface -> SDL.Surface -> IO (Mat [Tile])
-applyTileMat m src dest = 
-  let wid = Vec.length (m Vec.! 0) - 1
-      hei = (Vec.length m) - 1 in
-  do sequence $ [ applyTile (head (m § (i,j))) (32*j, 32*i) src dest | i <- [0..hei], j <- [0..wid]]
-     return $ fromMat [[(tail (m § (i,j))) | j <- [0..wid]] | i <- [0..hei]]
+applyTileMat :: Chunk -> SDL.Surface -> SDL.Surface -> IO Chunk
+applyTileMat ch src dest = 
+  let m = chLand ch
+      (x,y) = chPos ch
+      wid = Vec.length (m Vec.! 0) - 1
+      hei = (Vec.length m) - 1
+      (canW,canH) = canvasSize ch in
 
-tileList :: Mat [Tile] -> SDL.Surface -> SDL.Surface -> IO (Mat [Tile])
-tileList m src dest = applyTileMat m src dest >>= (\m' -> return m')
+  do --sequence $ [ applyTile (head (m § (i,j))) (0, 0) src dest | i <- [0..hei], j <- [0..wid]]
+     sequence $ [ applyTile (head (m § (i,j))) (32*(j-x), 32*(i-y)) src dest | i <- [y..(y+canH)], j <- [x..(x+canW)]]
+     let !m' = matMap tail m
+     return ch { chLand = m' }
+
+tileList :: Chunk -> SDL.Surface -> SDL.Surface -> IO Chunk
+tileList ch src dest = applyTileMat ch src dest >>= (\m' -> return m')
 
 -----------------------------------------------------------------------------------------------------
 {- Vectors -}
@@ -150,14 +168,25 @@ printVec v | (Vec.length $ Vec.tail v) == 0 = drop 9 $ (show $ Vec.head v)
            | otherwise = drop 9 $ (show $ Vec.head v) ++ '\n':printVec (Vec.tail v)
 
 matMap :: (a -> b) -> Mat a -> Mat b
-matMap f m = let wid = Vec.length (m Vec.! 0) - 1
-                 hei = (Vec.length m) - 1
-
-                 vals = [[f (m § (i,j)) | j <- [0..wid]] | i <- [0..hei]]
-                 
-             in fromMat vals
+matMap f m = Vec.map (\v -> Vec.map f v) m
                     
-
+moveCamera :: World -> Direction -> World
+moveCamera w d = let isInBounds (i,j) = i >= 0 && i <= 199 && j >= 0 && j <= 199
+                     (chX,chY) = (chPos.chunk $ w)
+                     ch = chunk w in
+                 
+                 case d of Lefty  -> if isInBounds (chX - 1, chY)
+                                    then w {chunk = ch {chPos = (chX-1,chY)}}
+                                    else w
+                           Righty -> if isInBounds (chX + 1, chY)
+                                    then w {chunk = ch {chPos = (chX+1,chY)}}
+                                    else w
+                           Up    -> if isInBounds (chX, chY - 1)
+                                    then w {chunk = ch {chPos = (chX,chY - 1)}}
+                                    else w
+                           Down  -> if isInBounds (chX, chY + 1)
+                                    then w {chunk = ch {chPos = (chX,chY + 1)}}
+                                    else w
 
 ----------------------------------------------------------------------------------------------------
 {- Main -}
@@ -165,7 +194,7 @@ matMap f m = let wid = Vec.length (m Vec.! 0) - 1
 
 
 screenwidth = 1000
-screenheight = 600
+screenheight = 608
 
 main = SDL.withInit [SDL.InitEverything] $ do
        
@@ -175,7 +204,7 @@ main = SDL.withInit [SDL.InitEverything] $ do
        gen <- getStdGen
        
        let (seed,_) = random gen
-           land = matMap noise2Tile (noiseMat 18 0.2 30 25 7 seed)
+           land = matMap noise2Tile (noiseMat 18 0.2 200 25 7 seed)
        
        args <- getArgs
        
@@ -183,21 +212,30 @@ main = SDL.withInit [SDL.InitEverything] $ do
        tilesData <- loadImage "bigAlphaTiles.png"
        
        let system = Sys screenwidth screenheight fpsm
-           world = World system scr tilesData land []
+           current = Chunk Islands (0,0) land (19,19)
+           world = World system scr tilesData current []
 
-       let loop w = do let (ch,t,s,fpsm) = (chunk w, tiles w, screen w, fps.sys $ w)
-                           (wid,hei) = (width.sys $ w, height.sys $ w) 
+       let loop w = 
+            do let (t,s,fpsm) = (tiles w, screen w, fps.sys $ w)
+                   (ch,(chX,chY)) = (chunk $ w, chPos.chunk $ w)
+                   (wid,hei) = (width.sys $ w, height.sys $ w)
                        
-                       SDLP.filledPolygon s [(0,0),(fI wid,0),(fI wid,fI hei),(0,fI hei)] (getPixel 0 0 0)
-                       ch' <- tileList ch t s
-                       SDL.flip s
+               SDLP.filledPolygon s [(0,0),(fI wid,0),(fI wid,fI hei),(0,fI hei)] (getPixel 0 0 0)
+               ch' <- tileList ch t s
+               SDL.flip s
+               let w' = w {chunk = ch'}        
+
+       	       event      <- SDL.pollEvent
+               SDLF.delay fpsm
                        
-       	               event      <- SDL.pollEvent
-                       SDLF.delay fpsm
-                       
-                       case event of
-                            SDL.Quit -> return ()
-                            SDL.KeyDown (SDL.Keysym SDL.SDLK_ESCAPE _ _) -> return ()
-                            SDL.NoEvent -> loop w {chunk = ch'} 
-                            _       -> loop w
+               case event of
+                SDL.Quit -> return ()
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_ESCAPE _ _) -> return ()
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_LEFT _ _) -> loop $ moveCamera w' Lefty
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_RIGHT _ _) -> loop $ moveCamera w' Righty
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_UP _ _) -> loop $ moveCamera w' Up
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_DOWN _ _) -> loop $ moveCamera w' Down
+                SDL.NoEvent -> loop w'
+                _       -> loop w'
+       
        loop world
