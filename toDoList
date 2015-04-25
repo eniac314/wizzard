@@ -1,0 +1,22 @@
+## General:
+
+## noise.hs:
+
+## Noise.hs:
+# trouver un moyen de ne pas avoir à calculer mini/maxi
+
+
+## Tiler.hs:
+# modifier tiler de façon a pouvoir se déplacer dans un chunk 
+
+# modifier tiler de façon à pouvoir gérer des sprites (cyclic list de tiles?) 
+
+# faire en sorte que tiler génère automatiquement des chunks (4?) autour
+  du chunk courant.
+
+# trouver une structure de données pour stocker les chunks:
+- dico (Data.Map)
+- graph (fgl : http://jelv.is/blog/Generating-Mazes-with-Inductive-Graphs/)
+
+# paralleliser la géneration de nouveau chunks:
+  http://chimera.labs.oreilly.com/books/1230000000929/index.html
