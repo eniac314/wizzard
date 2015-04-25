@@ -54,6 +54,7 @@ data Chunk = Chunk { chType :: ChunkType
                    , chPos :: (Int,Int)
                    , chLand :: Mat [Tile]
                    , canvasSize :: (Int,Int)
+                   , chunkSize :: Int
                    }
 
 data World = World { sys :: Sys
@@ -78,6 +79,25 @@ slow 0 xs = xs
 slow n [] = []
 slow n (x:xs) = go n x [] ++ (slow n xs) where go 0 _ xs = xs
                                                go n x xs = go (n-1) x (x:xs)
+
+-----------------------------------------------------------------------------------------------------
+{- Vectors -}
+
+type Mat a = Vec.Vector (Vec.Vector a)
+
+fromMat :: [[a]] ->  Mat a
+fromMat xs = Vec.fromList [Vec.fromList xs' | xs' <- xs]
+
+(§) :: Mat a -> (Int, Int) -> a
+v § (r, c) = (v Vec.! r) Vec.! c
+
+printVec :: (Show a) => Mat a -> String
+printVec v | (Vec.length $ Vec.tail v) == 0 = drop 9 $ (show $ Vec.head v)
+           | otherwise = drop 9 $ (show $ Vec.head v) ++ '\n':printVec (Vec.tail v)
+
+matMap :: (a -> b) -> Mat a -> Mat b
+matMap f m = Vec.map (\v -> Vec.map f v) m
+
 -------------------------------------------------------------------------------------------------
 {- Graphics -}
 
@@ -103,6 +123,10 @@ applySurface :: Int -> Int -> SDL.Surface -> SDL.Surface -> IO Bool
 applySurface x y src dst = SDL.blitSurface src clip dst offset
  where offset = Just SDL.Rect { SDL.rectX = x, SDL.rectY = y, SDL.rectW = 0, SDL.rectH = 0 }
        clip = Just SDL.Rect { SDL.rectX = 0, SDL.rectY = 0, SDL.rectW = fst $ surfaceSize src, SDL.rectH = snd $ surfaceSize src }
+
+---------------------------------------------------------------------------------------------------
+{- Engine -}
+
 
 getTile :: Tile -> Maybe SDL.Rect
 getTile t = 
@@ -144,7 +168,6 @@ applyTileMat ch src dest =
       (canW,canH) = canvasSize ch in
 
   do sequence $ [ (return $! (m § (i,j))) | i <- [0..hei], j <- [0..wid]]
-     --return $! [(m § (i,j))) | i <- [0..hei], j <- [0..wid]]
      sequence $ [ applyTile (head (m § (i,j))) (32*(j-x), 32*(i-y)) src dest | i <- [y..(y+canH)], j <- [x..(x+canW)]]
      let !m' = matMap tail m
      return ch { chLand = m' }
@@ -152,26 +175,9 @@ applyTileMat ch src dest =
 tileList :: Chunk -> SDL.Surface -> SDL.Surface -> IO Chunk
 tileList ch src dest = applyTileMat ch src dest >>= (\m' -> return m')
 
------------------------------------------------------------------------------------------------------
-{- Vectors -}
-
-type Mat a = Vec.Vector (Vec.Vector a)
-
-fromMat :: [[a]] ->  Mat a
-fromMat xs = Vec.fromList [Vec.fromList xs' | xs' <- xs]
-
-(§) :: Mat a -> (Int, Int) -> a
-v § (r, c) = (v Vec.! r) Vec.! c
-
-printVec :: (Show a) => Mat a -> String
-printVec v | (Vec.length $ Vec.tail v) == 0 = drop 9 $ (show $ Vec.head v)
-           | otherwise = drop 9 $ (show $ Vec.head v) ++ '\n':printVec (Vec.tail v)
-
-matMap :: (a -> b) -> Mat a -> Mat b
-matMap f m = Vec.map (\v -> Vec.map f v) m
-                    
 moveCamera :: World -> Direction -> World
-moveCamera w d = let isInBounds (i,j) = i >= 0 && i <= 199 && j >= 0 && j <= 199
+moveCamera w d = let maxBound = (chunkSize.chunk $ w) - (uncurry max) (canvasSize.chunk $ w)
+                     isInBounds (i,j) = (i >= 0 && i < maxBound) && (j >= 0 && j < maxBound)
                      (chX,chY) = (chPos.chunk $ w)
                      ch = chunk w in
                  
@@ -188,6 +194,8 @@ moveCamera w d = let isInBounds (i,j) = i >= 0 && i <= 199 && j >= 0 && j <= 199
                                     then w {chunk = ch {chPos = (chX,chY + 1)}}
                                     else w
 
+
+
 ----------------------------------------------------------------------------------------------------
 {- Main -}
 
@@ -203,8 +211,10 @@ main = SDL.withInit [SDL.InitEverything] $ do
        
        gen <- getStdGen
        
-       let (seed,_) = random gen
-           land = matMap noise2Tile (noiseMat 18 0.2 200 25 7 seed)
+       let (oct,per,nbrPts,nbrSum,nbrCol) = (18, 0.2, 200, 25, 7)
+           (seed,_) = random gen
+           land = matMap noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
+           canSize = 19
        
        args <- getArgs
        
@@ -212,7 +222,7 @@ main = SDL.withInit [SDL.InitEverything] $ do
        tilesData <- loadImage "bigAlphaTiles.png"
        
        let system = Sys screenwidth screenheight fpsm
-           current = Chunk Islands (0,0) land (19,19)
+           current = Chunk Islands (0,0) land (canSize,canSize) nbrPts
            world = World system scr tilesData current []
 
        let loop w = 
@@ -227,8 +237,6 @@ main = SDL.withInit [SDL.InitEverything] $ do
 
        	       event      <- SDL.pollEvent
                SDLF.delay fpsm
-
-               putStrLn $ show (chX,chY)
                        
                case event of
                 SDL.Quit -> return ()
