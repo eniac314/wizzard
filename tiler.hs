@@ -62,9 +62,10 @@ data World = World { sys :: Sys
                    , tiles :: SDL.Surface
                    , chunk :: Chunk
                    , chunks :: [Chunk]
+                   , direct :: Direction
                    }
 
-data Direction = Lefty | Righty| Up | Down
+data Direction = Lefty | Righty| Up | Down | Stop
 
 {-# LANGUAGE BangPatterns #-}
 
@@ -175,13 +176,15 @@ applyTileMat ch src dest =
 tileList :: Chunk -> SDL.Surface -> SDL.Surface -> IO Chunk
 tileList ch src dest = applyTileMat ch src dest >>= (\m' -> return m')
 
-moveCamera :: World -> Direction -> World
-moveCamera w d = let maxBound = (chunkSize.chunk $ w) - (uncurry max) (canvasSize.chunk $ w)
-                     isInBounds (i,j) = (i >= 0 && i < maxBound) && (j >= 0 && j < maxBound)
-                     (chX,chY) = (chPos.chunk $ w)
-                     ch = chunk w in
+moveCamera :: World -> World
+moveCamera w  = let maxBound = (chunkSize.chunk $ w) - (uncurry max) (canvasSize.chunk $ w)
+                    isInBounds (i,j) = (i >= 0 && i < maxBound) && (j >= 0 && j < maxBound)
+                    (chX,chY) = (chPos.chunk $ w)
+                    ch = chunk w in
                  
-                 case d of Lefty  -> if isInBounds (chX - 1, chY)
+                 case direct w of
+                           Stop -> w
+                           Lefty  -> if isInBounds (chX - 1, chY)
                                     then w {chunk = ch {chPos = (chX-1,chY)}}
                                     else w
                            Righty -> if isInBounds (chX + 1, chY)
@@ -223,7 +226,7 @@ main = SDL.withInit [SDL.InitEverything] $ do
        
        let system = Sys screenwidth screenheight fpsm
            current = Chunk Islands (0,0) land (canSize,canSize) nbrPts
-           world = World system scr tilesData current []
+           world = World system scr tilesData current [] Stop
 
        let loop w = 
             do let (t,s,fpsm) = (tiles w, screen w, fps.sys $ w)
@@ -233,18 +236,19 @@ main = SDL.withInit [SDL.InitEverything] $ do
                SDLP.filledPolygon s [(0,0),(fI wid,0),(fI wid,fI hei),(0,fI hei)] (getPixel 0 0 0)
                ch' <- tileList ch t s
                SDL.flip s
-               let w' = w {chunk = ch'}        
+               let w' = moveCamera (w {chunk = ch'})        
 
        	       event      <- SDL.pollEvent
                SDLF.delay fpsm
                        
                case event of
                 SDL.Quit -> return ()
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_LEFT _ _) -> loop $  w' {direct = Lefty}
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_RIGHT _ _) -> loop $ w' {direct = Righty}
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_UP _ _) -> loop $ w' {direct = Up}
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_DOWN _ _) -> loop $ w' {direct = Down}
                 SDL.KeyDown (SDL.Keysym SDL.SDLK_ESCAPE _ _) -> return ()
-                SDL.KeyDown (SDL.Keysym SDL.SDLK_LEFT _ _) -> loop $ moveCamera w' Lefty
-                SDL.KeyDown (SDL.Keysym SDL.SDLK_RIGHT _ _) -> loop $ moveCamera w' Righty
-                SDL.KeyDown (SDL.Keysym SDL.SDLK_UP _ _) -> loop $ moveCamera w' Up
-                SDL.KeyDown (SDL.Keysym SDL.SDLK_DOWN _ _) -> loop $ moveCamera w' Down
+                SDL.KeyUp (SDL.Keysym _ _ _) -> loop $ (w {direct = Stop})
                 SDL.NoEvent -> loop w'
                 _       -> loop w'
        
