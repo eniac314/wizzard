@@ -43,6 +43,18 @@ data LandType = Swamp
 data Tile = Water WaterType 
           | Land LandType deriving Show
 
+data Sys = Sys { width :: Int
+               , height :: Int
+               , fps :: SDLF.FPSManager
+               }
+
+data World = World { sys :: Sys
+                   , screen :: SDL.Surface
+                   , tiles :: SDL.Surface
+                   , chunk :: Mat [Tile]
+                   , chunks :: [Mat [Tile]]
+                   }
+
 --------------------------------------------------------------------------------------------------------
 {- misc helper functions-}
 
@@ -151,11 +163,9 @@ matMap f m = let wid = Vec.length (m Vec.! 0) - 1
 {- Main -}
 
 
-delay start stop = let res = 30 - (stop - start)
-                   in if (res > 0 && res < 100 ) then res else 0
 
-width = 1368
-height = 960
+screenwidth = 1000
+screenheight = 600
 
 main = SDL.withInit [SDL.InitEverything] $ do
        
@@ -169,14 +179,17 @@ main = SDL.withInit [SDL.InitEverything] $ do
        
        args <- getArgs
        
-       screen <- SDL.setVideoMode width height 32 [SDL.SWSurface]
-       tiles <- loadImage "bigAlphaTiles.png"
+       scr <- SDL.setVideoMode screenwidth screenheight 32 [SDL.SWSurface]
+       tilesData <- loadImage "bigAlphaTiles.png"
        
-       let world = (land, tiles, screen, fpsm)
+       let system = Sys screenwidth screenheight fpsm
+           world = World system scr tilesData land []
 
-       let loop w = do let (l,t,s,fpsm) = w
-                       SDLP.filledPolygon screen [(0,0),(1368,0),(1368,960),(0,960)] (getPixel 0 0 0)
-                       l' <- tileList l t s
+       let loop w = do let (ch,t,s,fpsm) = (chunk w, tiles w, screen w, fps.sys $ w)
+                           (wid,hei) = (width.sys $ w, height.sys $ w) 
+                       
+                       SDLP.filledPolygon s [(0,0),(fI wid,0),(fI wid,fI hei),(0,fI hei)] (getPixel 0 0 0)
+                       ch' <- tileList ch t s
                        SDL.flip s
                        
        	               event      <- SDL.pollEvent
@@ -185,6 +198,6 @@ main = SDL.withInit [SDL.InitEverything] $ do
                        case event of
                             SDL.Quit -> return ()
                             SDL.KeyDown (SDL.Keysym SDL.SDLK_ESCAPE _ _) -> return ()
-                            SDL.NoEvent -> loop (l',t,s,fpsm) 
+                            SDL.NoEvent -> loop w {chunk = ch'} 
                             _       -> loop w
        loop world
