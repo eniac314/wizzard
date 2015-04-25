@@ -78,7 +78,6 @@ slow 0 xs = xs
 slow n [] = []
 slow n (x:xs) = go n x [] ++ (slow n xs) where go 0 _ xs = xs
                                                go n x xs = go (n-1) x (x:xs)
-
 -------------------------------------------------------------------------------------------------
 {- Graphics -}
 
@@ -138,13 +137,14 @@ applyTile tile (x,y) src dest =
 
 applyTileMat :: Chunk -> SDL.Surface -> SDL.Surface -> IO Chunk
 applyTileMat ch src dest = 
-  let m = chLand ch
+  let m = chLand $! ch
       (x,y) = chPos ch
       wid = Vec.length (m Vec.! 0) - 1
       hei = (Vec.length m) - 1
       (canW,canH) = canvasSize ch in
 
-  do --sequence $ [ applyTile (head (m § (i,j))) (0, 0) src dest | i <- [0..hei], j <- [0..wid]]
+  do sequence $ [ (return $! (m § (i,j))) | i <- [0..hei], j <- [0..wid]]
+     --return $! [(m § (i,j))) | i <- [0..hei], j <- [0..wid]]
      sequence $ [ applyTile (head (m § (i,j))) (32*(j-x), 32*(i-y)) src dest | i <- [y..(y+canH)], j <- [x..(x+canW)]]
      let !m' = matMap tail m
      return ch { chLand = m' }
@@ -227,6 +227,8 @@ main = SDL.withInit [SDL.InitEverything] $ do
 
        	       event      <- SDL.pollEvent
                SDLF.delay fpsm
+
+               putStrLn $ show (chX,chY)
                        
                case event of
                 SDL.Quit -> return ()
