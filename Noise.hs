@@ -1,13 +1,8 @@
 module Noise (perlin2D, noiseMat) where
-import qualified Graphics.UI.SDL as SDL
-import qualified Graphics.UI.SDL.Primitives as SDLP
-import GHC.Word
 import GHC.Int
 import Data.Bits
-import qualified Data.Set as Set
 import qualified Data.List as List
 import System.Random
-import Data.Fixed (mod')
 import qualified Data.Vector as Vec
 
 fI :: (Integral a, Num b) => a -> b
@@ -65,52 +60,7 @@ perlin2D (x,y) n p s = let rands = randList s
                            go n t (r:rs) = go (n-1) (t + interNoise (((fI r) + x)*2^n, ((fI r) + y)*2^n) * p^n) rs
                        in go (n-1) 0 rands
 
-------------------------------------------------------------------------------------------------------------------------
-{- Graphics -}
-
-type Point = (Double,Double)
-type Pxl = (Int16,Int16,SDL.Pixel)
-
-getPixel ::(Word8, Word8, Word8) -> SDL.Pixel
-getPixel (r, g, b) = SDL.Pixel $ (shiftL (fi r) 24 .|. shiftL (fi g) 16 .|. shiftL (fi b) 8 .|. (fi 255)) where 
-	fi a = fromIntegral a
-
-pixelsToScreen :: [Point] -> SDL.Surface -> SDL.Pixel -> [IO Bool]
-pixelsToScreen xs s p = map (\(x,y) -> SDLP.pixel s (fromIntegral.round $ x) (fromIntegral.round $ y) p) xs
-
-zoomPix :: Int16 -> Int16 -> [Pxl] -> [Pxl]
-zoomPix h v ps = let helper (x,y,p) = [((h*x)+i,(v*y)+j,p) | i <- [0..(h-1)], j <- [0..(v-1)]]
-              in flatMap helper ps
-
-zoomRect :: Int16 -> Int16 -> [Pxl] -> [(SDL.Rect,SDL.Pixel)]
-zoomRect h v ps = let ps1 = map (\(x,y,p) -> (x*h,y*v,p)) ps
-               in map (\(x,y,p) -> (SDL.Rect {SDL.rectX = fI x, SDL.rectY = fI y, SDL.rectW = fI h,SDL.rectH = fI v},p)) ps1
-
-zoomPoly :: Int16 -> Int16 -> [Pxl] -> [([(Int16,Int16)],SDL.Pixel)]
-zoomPoly h v ps = let helper (x,y,p) = ([(x*h,y*v),(x*h+(h),y*v),(x*h+(h),y*v+(v)),(x*h,y*v+(v))],p)
-               in map helper ps
-
-
---http://www.rapidtables.com/convert/color/hsv-to-rgb.htm
-hsvToRgb :: (Double,Double,Double) -> (Word8,Word8,Word8)
-hsvToRgb (h,s,v) =  let c = v * s
-                        x = c * (1 - (abs $ (mod' (h / 60) 2) - 1)) --X = C × (1 - |(H / 60º) mod 2 - 1|)
-                        m = v - c
-                        (r',g',b') = getRgb' c x
-
-                    in (round.(255 *) $ r'+ m, round.(255 *) $ g'+ m, round.(255 *) $ b'+ m)
-                    
-                    where getRgb' c x | 0 <= h && h < 60 = (c,x,0)
-                                      | 60 <= h && h < 120 = (x,c,0)
-                                      | 120 <= h && h < 180 = (0,c,x)
-                                      | 180 <= h && h < 240 = (0,x,c)
-                                      | 240 <= h && h < 300 = (x,0,c)
-                                      | 300 <= h && h < 360 = (c,0,x)
-
-
-------------------------------------------------------------------------------------------------------------------------
-
-
+----------------------------------------------------------------------------------------------------------------
 {- Vectors -}
 
 type Mat a = Vec.Vector (Vec.Vector a)
@@ -124,6 +74,15 @@ v § (r, c) = (v Vec.! r) Vec.! c
 printVec :: (Show a) => Mat a -> String
 printVec v | (Vec.length $ Vec.tail v) == 0 = drop 9 $ (show $ Vec.head v)
            | otherwise = drop 9 $ (show $ Vec.head v) ++ '\n':printVec (Vec.tail v)
+
+whnfElements :: Vec.Vector a -> Vec.Vector a
+whnfElements v = Vec.foldl' (flip seq) () v `seq` v
+
+vmap' :: (a -> b) -> Vec.Vector a -> Vec.Vector b
+vmap' f = whnfElements . Vec.map f
+
+matMap :: (a -> b) -> Mat a -> Mat b
+matMap  f = (vmap' . vmap') f
 
 --(oct,per,nbrPts,nbrSummit,nbrCol,seed)
 noiseMat :: Int -> Double -> Int -> Int -> Int -> Int -> Mat Int
@@ -145,7 +104,7 @@ noiseMat oct per nbrPts nbrSummit nbrCol seed =
         helper xs = let (row,xs') = splitAt nbrPts xs
                     in row:helper xs'
 
-    in fromMat $ helper scaledVals
+    in (matMap id).fromMat $ helper scaledVals
 
         
 

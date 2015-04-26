@@ -6,13 +6,13 @@ import qualified Graphics.UI.SDL.Framerate as SDLF
 import GHC.Word
 import GHC.Int
 import Data.Bits
-import qualified Data.Set as Set
 import qualified Data.List as List
 import System.Random
 import System.Environment
 import qualified Data.Vector as Vec
 import Noise
 import Data.Graph.Inductive
+
 
 
 fI = fromIntegral
@@ -42,6 +42,8 @@ data LandType = Swamp
 
 data Tile = Water WaterType 
           | Land LandType deriving Show
+
+--instance NFData Tile where rnf x = seq x ()
 
 data Sys = Sys { width :: Int
                , height :: Int
@@ -81,6 +83,12 @@ slow n [] = []
 slow n (x:xs) = go n x [] ++ (slow n xs) where go 0 _ xs = xs
                                                go n x xs = go (n-1) x (x:xs)
 
+
+
+
+
+
+
 -----------------------------------------------------------------------------------------------------
 {- Vectors -}
 
@@ -96,8 +104,15 @@ printVec :: (Show a) => Mat a -> String
 printVec v | (Vec.length $ Vec.tail v) == 0 = drop 9 $ (show $ Vec.head v)
            | otherwise = drop 9 $ (show $ Vec.head v) ++ '\n':printVec (Vec.tail v)
 
+
+whnfElements :: Vec.Vector a -> Vec.Vector a
+whnfElements v = Vec.foldl' (flip seq) () v `seq` v
+
+vmap' :: (a -> b) -> Vec.Vector a -> Vec.Vector b
+vmap' f = whnfElements . Vec.map f
+
 matMap :: (a -> b) -> Mat a -> Mat b
-matMap f m = Vec.map (\v -> (Vec.map f) $! v) $! m
+matMap  f = (vmap' . vmap') f
 
 -------------------------------------------------------------------------------------------------
 {- Graphics -}
@@ -169,9 +184,8 @@ applyTileMat ch src dest =
       (canW,canH) = canvasSize ch in
 
   do sequence $ [ applyTile (head (m § (i,j))) (32*(j-x), 32*(i-y)) src dest | i <- [y..(y+canH)], j <- [x..(x+canW)]]
-     m' <-sequence $ [sequence [(return $! tail (m § (i,j))) | j <- [0..wid]] | i <- [0..hei]] --weird :P
-     --let !m' = fromMat $! [id $! [(tail $! (m § (i,j))) | j <- [0..wid]] | i <- [0..hei]]
-     return ch { chLand = fromMat m' }
+     let m' = matMap tail m
+     return ch { chLand = m' }
 
 tileList :: Chunk -> SDL.Surface -> SDL.Surface -> IO Chunk
 tileList ch src dest = applyTileMat ch src dest >>= (\m' -> return m')
