@@ -132,7 +132,7 @@ applySurface x y src dst = SDL.blitSurface src clip dst offset
 getTile :: Tile -> Maybe SDL.Rect
 getTile t = 
 	let (i,j) = case t of Water Shallow -> (0,3)
-	                      Water Deep1 -> (7,31)
+	                      Water Deep1 -> (0,1)
 	                      Water Deep2 -> (0,2)
 	                      Land Swamp -> (0,4)
 	                      Land GrassLand -> (0,5)
@@ -144,8 +144,8 @@ getTile t =
 	                      _              -> (0,7)	                      
 	in Just SDL.Rect { SDL.rectX = j * 32, SDL.rectY = i * 32 , SDL.rectW = 32, SDL.rectH = 32}
 
-noise2Tile n | n == 0 = cycle $ slow 4 [Water Deep2,Water Shallow]
-             | n == 1 = cycle $ slow 4 [Water Deep2,Water Shallow]
+noise2Tile n | n == 0 = cycle $ slow 20 [Water Deep2,Water Deep1]
+             | n == 1 = cycle $ slow 20 [Water Deep2,Water Deep1]
              | n == 2 = cycle [Land Swamp]
              | n == 3 = cycle [Land GrassLand]
              | n == 4 = cycle [Land SmallTrees]
