@@ -61,7 +61,7 @@ perlin2D (x,y) n p s = let rands = randList s
 
                               in interpolate i1 i2 fracY
 
-                           go 0 t (r:rs) = t + interNoise (((fI r) + x)*2^n, ((fI r) + y)*2^n) * (p^n)
+                           go 0 t (r:rs) = t + interNoise (((fI r) + x), ((fI r) + y))
                            go n t (r:rs) = go (n-1) (t + interNoise (((fI r) + x)*2^n, ((fI r) + y)*2^n) * p^n) rs
                        in go (n-1) 0 rands
 

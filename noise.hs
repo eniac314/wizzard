@@ -59,7 +59,7 @@ perlin2D (x,y) n p s = let rands = randList s
 
                               in interpolate i1 i2 fracY
 
-                           go 0 t (r:rs) = t + interNoise (((fI r) + x)*2^n, ((fI r) + y)*2^n) * (p^n)
+                           go 0 t (r:rs) = t + interNoise (((fI r) + x), ((fI r) + y))
                            go n t (r:rs) = go (n-1) (t + interNoise (((fI r) + x)*2^n, ((fI r) + y)*2^n) * p^n) rs
                        in go (n-1) 0 rands
 
@@ -158,8 +158,10 @@ main = SDL.withInit [SDL.InitEverything] $ do
 
        --let mapped = map (\(x,y,n) -> (fI.toScale $ n)) pts
 
-       --putStrLn $ "Nbr of distinct values: " ++ show (Set.size $ Set.fromList vals)
-       --putStrLn $ "Val min/max: " ++ show (mini, maxi)
+       putStrLn $ "Nbr of distinct values: " ++ show (Set.size $ Set.fromList vals)
+       putStrLn $ "Val min/max: " ++ show (mini, maxi)
+       putStrLn $ "Possible Max " ++ show (if per >= 1 then (fI oct*per^oct) else sum [per ^ i | i <- [0..oct]]) 
+       putStrLn $ "Delta: " ++ show (maxi - mini)
 
        --putStrLn $ "Nbr of distinct mapped values: " ++ show (Set.size $ Set.fromList mapped)
        --putStrLn $ "Val min/max: " ++ show (List.minimum mapped, List.maximum mapped)
