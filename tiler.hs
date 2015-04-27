@@ -126,7 +126,7 @@ matMap f = (vmap'.vmap') f
 update :: Mat a -> (Int,Int,a) -> Mat a
 update m (i,j,v) = vImap' (\k v' -> if k == i
                                     then vImap' (\l v'' -> if l == j then v else v'') v'
-                                    else v') m
+                                    else whnfElements v') m
 
 updates :: Mat a -> [(Int,Int,a)] -> Mat a
 updates m xs = List.foldl' update m xs 
