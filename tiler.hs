@@ -230,6 +230,7 @@ main = SDL.withInit [SDL.InitEverything] $ do
        
        let (oct,per,nbrPts,nbrSum,nbrCol) = (18, 0.2, 200, 25, 7)
            (seed,_) = random gen
+           --(seed,_) = random.mkStdGen $ 12
            land = matMap noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
            canSize = 19
        

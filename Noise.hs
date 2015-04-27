@@ -4,6 +4,7 @@ import Data.Bits
 import qualified Data.List as List
 import System.Random
 import qualified Data.Vector as Vec
+--import Criterion.Main
 
 fI :: (Integral a, Num b) => a -> b
 fI = fromIntegral
@@ -89,9 +90,34 @@ noiseMat :: Int -> Double -> Int -> Int -> Int -> Int -> Mat Int
 noiseMat oct per nbrPts nbrSummit nbrCol seed =
     let summits = (fI nbrPts / fI nbrSummit)
         p (i,j) = perlin2D (i,j) oct per seed        
+
+        getVals xs 0 maxi mini = (xs, maxi, mini)
+        getVals xs r maxi mini = let getRow xs 0 max' min' = (xs,max',min')
+                                     getRow xs n max' min' = let v = p ((fI r)/summits,(fI n)/summits)
+                                                                 max'' = max max' v
+                                                                 min'' = min min' v
+                                                             in getRow (v:xs) (n-1) max'' min''
+                                     
+                                     (rs,max'',min'') = getRow [] (nbrPts-1) maxi mini 
+                                
+                                 in getVals (rs:xs) (r-1) max'' min''
+
+        (vals,maxi, mini) = getVals [] (nbrPts-1) 0.0 (p (0,0))
+
+        toScale v = let v' = (fI nbrCol) * (v-mini)/(maxi-mini)                       
+                    in round v'
+
+    in (matMap toScale).fromMat $ vals
+
+
+noiseMat2 :: Int -> Double -> Int -> Int -> Int -> Int -> Mat Int
+noiseMat2 oct per nbrPts nbrSummit nbrCol seed =
+    let summits = (fI nbrPts / fI nbrSummit)
+        p (i,j) = perlin2D (i,j) oct per seed        
         
         vals = [(p ((fI i)/summits,(fI j)/summits)) | i <- [0..nbrPts-1], j <- [0..nbrPts-1]]
 
+        
         (mini,maxi) = (List.minimum vals, List.maximum vals)
 
         toScale v = let v' = (fI nbrCol) * (v-mini)/(maxi-mini)                       
@@ -104,13 +130,17 @@ noiseMat oct per nbrPts nbrSummit nbrCol seed =
         helper xs = let (row,xs') = splitAt nbrPts xs
                     in row:helper xs'
 
-    in (matMap id).fromMat $ helper scaledVals
-
+        in fromMat $ helper scaledVals
         
 
-
-
-
+{- Benchmarking -}
+{-
+main = defaultMain [
+  bgroup "noiseMat" [ bench "1"  $ whnf (noiseMat 12 1 200 20 255) 12
+                    , bench "2"  $ whnf (noiseMat2 12 1 200 20 255) 12
+                    ]
+  ]
+-}
 
       
        
