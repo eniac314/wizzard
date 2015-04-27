@@ -98,17 +98,11 @@ whnfList xs = List.foldl' (flip seq) () xs `seq` xs
 -----------------------------------------------------------------------------------------------------
 {- Vectors -}
 
-type Mat a = Vec.Vector (Vec.Vector a)
+type Mat a = Vec.Vector a
 
-fromMat :: [[a]] ->  Mat a
-fromMat xs = Vec.fromList [Vec.fromList xs' | xs' <- xs]
-
-(§) :: Mat a -> (Int, Int) -> a
-v § (r, c) = (v Vec.! r) Vec.! c
-
-printVec :: (Show a) => Mat a -> String
-printVec v | (Vec.length $ Vec.tail v) == 0 = drop 9 $ (show $ Vec.head v)
-           | otherwise = drop 9 $ (show $ Vec.head v) ++ '\n':printVec (Vec.tail v)
+--printVec :: (Show a) => Mat a -> String
+--printVec v | (Vec.length $ Vec.tail v) == 0 = drop 9 $ (show $ Vec.head v)
+--           | otherwise = drop 9 $ (show $ Vec.head v) ++ '\n':printVec (Vec.tail v)
 
 
 whnfElements :: Vec.Vector a -> Vec.Vector a
@@ -120,13 +114,14 @@ vmap' f = whnfElements . Vec.map f
 vImap' :: (Int -> a -> b) -> Vec.Vector a -> Vec.Vector b
 vImap' f = whnfElements.Vec.imap f
 
-matMap :: (a -> b) -> Mat a -> Mat b
-matMap f = (vmap'.vmap') f
+--matMap :: (a -> b) -> Mat a -> Mat b
+--matMap f = (vmap'.vmap') f
 
 update :: Mat a -> (Int,Int,a) -> Mat a
 update m (i,j,v) = vImap' (\k v' -> if k == i
                                     then vImap' (\l v'' -> if l == j then v else v'') v'
                                     else v') m
+update m (i,j,v) = vImap' (k v')
 
 updates :: Mat a -> [(Int,Int,a)] -> Mat a
 updates m xs = List.foldl' update m xs 

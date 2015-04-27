@@ -66,15 +66,8 @@ perlin2D (x,y) n p s = let rands = randList s
 
 type Mat a = Vec.Vector a
 
-fromMat :: [[a]] ->  Mat a
-fromMat xs = Vec.fromList [Vec.fromList xs' | xs' <- xs]
-
-(§) :: Mat a -> (Int, Int) -> a
-v § (r, c) = (v Vec.! r) Vec.! c
-
-printVec :: (Show a) => Mat a -> String
-printVec v | (Vec.length $ Vec.tail v) == 0 = drop 9 $ (show $ Vec.head v)
-           | otherwise = drop 9 $ (show $ Vec.head v) ++ '\n':printVec (Vec.tail v)
+fromMat :: [a] ->  Mat a
+fromMat = Vec.fromList
 
 whnfElements :: Vec.Vector a -> Vec.Vector a
 whnfElements v = Vec.foldl' (flip seq) () v `seq` v
@@ -82,8 +75,6 @@ whnfElements v = Vec.foldl' (flip seq) () v `seq` v
 vmap' :: (a -> b) -> Vec.Vector a -> Vec.Vector b
 vmap' f = whnfElements . Vec.map f
 
-matMap :: (a -> b) -> Mat a -> Mat b
-matMap  f = (vmap' . vmap') f
 
 --(oct,per,nbrPts,nbrSummit,nbrCol,seed)
 noiseMat :: Int -> Double -> Int -> Int -> Int -> Int -> Mat Int
@@ -100,38 +91,14 @@ noiseMat oct per nbrPts nbrSummit nbrCol seed =
                                      
                                      (rs,max'',min'') = getRow [] nbrPts maxi mini 
                                 
-                                 in getVals (rs:xs) (r-1) max'' min''
+                                 in getVals (rs++xs) (r-1) max'' min''
 
         (vals,maxi, mini) = getVals [] nbrPts 0.0 (p (0,0))
 
         toScale v = let v' = (fI nbrCol) * (v-mini)/(maxi-mini)                       
                     in round v'
 
-    in (matMap toScale).fromMat $ vals
-
-
-noiseMat2 :: Int -> Double -> Int -> Int -> Int -> Int -> Mat Int
-noiseMat2 oct per nbrPts nbrSummit nbrCol seed =
-    let summits = (fI nbrPts / fI nbrSummit)
-        p (i,j) = perlin2D (i,j) oct per seed        
-        
-        vals = [(p ((fI i)/summits,(fI j)/summits)) | i <- [0..nbrPts-1], j <- [0..nbrPts-1]]
-
-        
-        (mini,maxi) = (List.minimum vals, List.maximum vals)
-
-        toScale v = let v' = (fI nbrCol) * (v-mini)/(maxi-mini)                       
-                    in round v'
-        
-        scaledVals = map (\n -> (toScale n)) vals 
-
-
-        helper [] = []
-        helper xs = let (row,xs') = splitAt nbrPts xs
-                    in row:helper xs'
-
-        in fromMat $ helper scaledVals
-        
+    in (vmap' toScale).fromMat $ vals
 
 {- Benchmarking -}
 {-
