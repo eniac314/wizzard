@@ -93,16 +93,16 @@ noiseMat oct per nbrPts nbrSummit nbrCol seed =
 
         getVals xs 0 maxi mini = (xs, maxi, mini)
         getVals xs r maxi mini = let getRow xs 0 max' min' = (xs,max',min')
-                                     getRow xs n max' min' = let v = p ((fI r)/summits,(fI n)/summits)
+                                     getRow xs c max' min' = let v = p ((fI r)/summits,(fI c)/summits)
                                                                  max'' = max max' v
                                                                  min'' = min min' v
-                                                             in getRow (v:xs) (n-1) max'' min''
+                                                             in getRow (v:xs) (c-1) max'' min''
                                      
-                                     (rs,max'',min'') = getRow [] (nbrPts-1) maxi mini 
+                                     (rs,max'',min'') = getRow [] nbrPts maxi mini 
                                 
                                  in getVals (rs:xs) (r-1) max'' min''
 
-        (vals,maxi, mini) = getVals [] (nbrPts-1) 0.0 (p (0,0))
+        (vals,maxi, mini) = getVals [] nbrPts 0.0 (p (0,0))
 
         toScale v = let v' = (fI nbrCol) * (v-mini)/(maxi-mini)                       
                     in round v'
