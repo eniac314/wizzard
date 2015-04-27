@@ -64,7 +64,7 @@ perlin2D (x,y) n p s = let rands = randList s
 ----------------------------------------------------------------------------------------------------------------
 {- Vectors -}
 
-type Mat a = Vec.Vector (Vec.Vector a)
+type Mat a = Vec.Vector a
 
 fromMat :: [[a]] ->  Mat a
 fromMat xs = Vec.fromList [Vec.fromList xs' | xs' <- xs]
