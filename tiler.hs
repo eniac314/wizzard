@@ -104,6 +104,8 @@ type Mat a = Vec.Vector a
 --printVec v | (Vec.length $ Vec.tail v) == 0 = drop 9 $ (show $ Vec.head v)
 --           | otherwise = drop 9 $ (show $ Vec.head v) ++ '\n':printVec (Vec.tail v)
 
+(§) :: Mat a -> (Int, Int) -> a
+v § (r, c) = v Vec.! (r*nbrRow + c)
 
 whnfElements :: Vec.Vector a -> Vec.Vector a
 whnfElements v = Vec.foldl' (flip seq) () v `seq` v
@@ -114,14 +116,8 @@ vmap' f = whnfElements . Vec.map f
 vImap' :: (Int -> a -> b) -> Vec.Vector a -> Vec.Vector b
 vImap' f = whnfElements.Vec.imap f
 
---matMap :: (a -> b) -> Mat a -> Mat b
---matMap f = (vmap'.vmap') f
-
 update :: Mat a -> (Int,Int,a) -> Mat a
-update m (i,j,v) = vImap' (\k v' -> if k == i
-                                    then vImap' (\l v'' -> if l == j then v else v'') v'
-                                    else v') m
-update m (i,j,v) = vImap' (k v')
+update m (i,j,v) = vImap' (\k v' -> if k == (i*nbrRow+j) then v else v') m
 
 updates :: Mat a -> [(Int,Int,a)] -> Mat a
 updates m xs = List.foldl' update m xs 
@@ -213,12 +209,10 @@ applyTileMat :: Chunk -> SDL.Surface -> SDL.Surface -> IO Chunk
 applyTileMat ch src dest = 
   let m = chLand $! ch
       (x,y) = chPos ch
-      wid = Vec.length (m Vec.! 0) - 1
-      hei = (Vec.length m) - 1
       (canW,canH) = canvasSize ch in
 
   do sequence $ [ applyTile (head (m § (i,j))) (32*(j-x), 32*(i-y)) src dest | i <- [y..(y+canH)], j <- [x..(x+canW)]]
-     let m' = (matMap tail) $ m
+     let m' = (vmap' tail) $ m
      return ch { chLand = m' }
 
 tileList :: Chunk -> SDL.Surface -> SDL.Surface -> IO Chunk
@@ -254,6 +248,9 @@ moveCamera w  = let maxBound = (chunkSize.chunk $ w) - (uncurry max) (canvasSize
 
 screenwidth = 1000
 screenheight = 608
+nbrPts = 200
+nbrRow = 200
+nbrCol = 200 
 
 main = SDL.withInit [SDL.InitEverything] $ do
        
@@ -262,12 +259,13 @@ main = SDL.withInit [SDL.InitEverything] $ do
        
        gen <- getStdGen
        
-       let (oct,per,nbrPts,nbrSum,nbrCol) = (18, 0.2, 200, 25, 7)
+       let (oct,per,nbrSum,nbrCol) = (18, 0.2, 25, 7)
            (seed,_) = random gen
            --(seed,_) = random.mkStdGen $ 12
            
            --initial tile vector
-           land = putMageIn $ matMap noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
+           land = putMageIn $ vmap' noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
+           --land = vmap' noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
            
            --width/height of displayed canvas (in tiles)
            canSize = 19
