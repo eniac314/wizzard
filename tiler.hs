@@ -1,4 +1,5 @@
 import Control.Monad
+import Control.Monad.ST
 import qualified Graphics.UI.SDL as SDL
 import qualified Graphics.UI.SDL.Primitives as SDLP
 import qualified Graphics.UI.SDL.Image as SDLI
@@ -10,6 +11,7 @@ import qualified Data.List as List
 import System.Random
 import System.Environment
 import qualified Data.Vector as Vec
+import qualified Data.Vector.Generic.Mutable as GM
 import Noise
 import Data.Graph.Inductive
 
@@ -120,7 +122,13 @@ update :: Mat a -> (Int,Int,a) -> Mat a
 update m (i,j,v) = vImap' (\k v' -> if k == (i*nbrRow+j) then v else v') m
 
 updates :: Mat a -> [(Int,Int,a)] -> Mat a
-updates m xs = List.foldl' update m xs 
+updates m xs = List.foldl' update m xs
+
+update2 :: Mat a -> (Int,Int,a) -> Mat a
+update2 m (i,j,v) = GM.runST $ do m' <- Vec.unsafeThaw m
+                                  GM.write (i*nbrRow+j) v
+                                  Vec.unsafeFreeze m'
+
 
 -------------------------------------------------------------------------------------------------
 {- Graphics -}
