@@ -11,6 +11,7 @@ import qualified Data.List as List
 import System.Random
 import System.Environment
 import qualified Data.Vector as Vec
+import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Generic.Mutable as GM
 import Noise
 import Data.Graph.Inductive
@@ -112,23 +113,30 @@ v § (r, c) = v Vec.! (r*nbrRow + c)
 whnfElements :: Vec.Vector a -> Vec.Vector a
 whnfElements v = Vec.foldl' (flip seq) () v `seq` v
 
+whnf2 v = Vec.foldl' (\a x -> whnfList x) [] v `seq` v
+
 vmap' :: (a -> b) -> Vec.Vector a -> Vec.Vector b
 vmap' f = whnfElements . Vec.map f
 
 vImap' :: (Int -> a -> b) -> Vec.Vector a -> Vec.Vector b
 vImap' f = whnfElements.Vec.imap f
 
-update :: Mat a -> (Int,Int,a) -> Mat a
-update m (i,j,v) = vImap' (\k v' -> if k == (i*nbrRow+j) then v else v') m
-
 updates :: Mat a -> [(Int,Int,a)] -> Mat a
 updates m xs = List.foldl' update m xs
 
-update2 :: Mat a -> (Int,Int,a) -> Mat a
-update2 m (i,j,v) = GM.runST $ do m' <- Vec.unsafeThaw m
-                                  GM.write (i*nbrRow+j) v
-                                  Vec.unsafeFreeze m'
+update :: Mat a -> (Int,Int,a) -> Mat a
+update m (i,j,v) = runST $ do m' <- Vec.thaw m
+                              GM.write m' (i*nbrRow+j) v
+                              Vec.freeze m'
 
+updateTail ::  Mat [[tile]] -> Mat [[tile]]
+updateTail m = runST $ do m' <- Vec.thaw (m)
+                          let loop 0 = return ()
+                              loop n = do (x:xs) <- GM.read m' n
+                                          GM.write m' n xs
+                                          loop (n-1)
+                          loop ((nbrCol-1)*(nbrRow -1))
+                          Vec.freeze m'
 
 -------------------------------------------------------------------------------------------------
 {- Graphics -}
@@ -200,12 +208,18 @@ putMageIn m = let tileStack = head $ m § (100,100) --[Tile]
                   m4 = slow 10 [tileStack ++ [Being Mage4]]
               in update m (100,100,cycle $ m1 ++ m2 ++ m3 ++ m4) 
 
-addThings :: Mat [[Tile]] -> [(Int,Int,Tile)] -> Mat [[Tile]]
-addThings m xs = let helper (i,j,t) = let tileStack = head $ m § (i,j)
-                                      in (i, j, cycle.whnfList $ [tileStack ++ [t]]) 
-                     xs' = map helper xs
-                 in updates m xs'              
 
+addThings :: Mat [[Tile]] -> [(Int,Int,Tile)] -> Mat [[Tile]]
+addThings m xs = runST $ do m' <- Vec.thaw (m)
+                            --m' <- Vec.thaw (whnfElements m)
+                            let loop [] = return ()
+                                loop ((i,j,t):xs) = do let ind = i * nbrPts + j
+                                                       tileStack <- GM.read m' ind
+                                                       let t' = cycle.whnfList $ [(head tileStack) ++ [t]] 
+                                                       GM.write m' ind t'
+                                                       loop xs
+                            loop xs
+                            Vec.freeze m'
               
 applyTile :: [Tile] -> (Int,Int) -> SDL.Surface -> SDL.Surface -> IO [Bool]
 applyTile ts (x,y) src dest =
@@ -220,7 +234,8 @@ applyTileMat ch src dest =
       (canW,canH) = canvasSize ch in
 
   do sequence $ [ applyTile (head (m § (i,j))) (32*(j-x), 32*(i-y)) src dest | i <- [y..(y+canH)], j <- [x..(x+canW)]]
-     let m' = (vmap' tail) $ m
+     let m' = updateTail (m) 
+     --let m' = (vmap' tail) $ m
      return ch { chLand = m' }
 
 tileList :: Chunk -> SDL.Surface -> SDL.Surface -> IO Chunk
@@ -273,7 +288,6 @@ main = SDL.withInit [SDL.InitEverything] $ do
            
            --initial tile vector
            land = putMageIn $ vmap' noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
-           --land = vmap' noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
            
            --width/height of displayed canvas (in tiles)
            canSize = 19
