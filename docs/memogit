@@ -1,0 +1,21 @@
+git status: infos about what's tracked
+
+git clone https://github.com/eniac314/wizzard : get remote data (first time only)
+git add -A : all everything to the staging area
+git commit -m "comment" : commit all staged items
+
+git fetch origin: fecth remote data (no incorporation)
+git diff origin/master: display differences
+git merge origin/master: merge changes
+
+git pull origin master:  Incorporates changes from a remote repository 
+
+git push origin master: push commited changes to remote dir
+
+git branch br : create new branch br
+
+git checkout br : switch to branch br
+
+git merge br : merge change in br to checked-out branch
+
+ref: http://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging
