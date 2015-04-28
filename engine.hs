@@ -18,6 +18,10 @@ import Data.Graph.Inductive
 import Control.DeepSeq
 import Tiles hiding (slow)
 
+data Player = Player { plPos :: (Int,Int)
+                     , plTiles :: Tile
+                     , direct :: Direction
+                     }
 
 data Sys = Sys { width :: Int
                , height :: Int
@@ -31,19 +35,87 @@ data Chunk = Chunk { chType :: ChunkType
                    , chLand :: Mat [[Tile]]
                    , canvasSize :: (Int,Int)
                    , chunkSize :: Int
+                   , chunkNbr :: Int
                    }
 
 data World = World { sys :: Sys
                    , screen :: SDL.Surface
-                   , tiles :: SDL.Surface
+                   , tileset :: SDL.Surface
                    , chunk :: Chunk
                    , chunks :: [Chunk]
-                   , direct :: Direction
+                   , player :: Player
                    }
 
 data Direction = Lefty | Righty| Up | Down | Stop
 
 {-# LANGUAGE BangPatterns #-}
+
+{- Main -}
+
+screenwidth = 1000
+screenheight = 640
+nbrPts = 200
+
+main = SDL.withInit [SDL.InitEverything] $ do
+       
+       fpsm <- SDLF.new
+       SDLF.init fpsm
+       
+       gen <- getStdGen
+       
+       let go v = addThings v [(2,3,Building Tower),(45,23,Building SmallCastle2),(100,80,Being Mage4)]
+           (oct,per,nbrSum,nbrCol) = (18, 0.2, 25, 7)
+           (seed,_) = random gen
+           --(seed,_) = random.mkStdGen $ 12
+           
+           --initial tile vector
+           land = go.putMageIn $ vmap' noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
+           
+           --width/height of displayed canvas (in tiles)
+           canSize = 19
+
+           --Starting position in chunk
+           (chPosX,chPosY) = let off = (div nbrPts 2) - (div canSize 2) in (off,off)
+       
+       args <- getArgs
+       
+       scr <- SDL.setVideoMode screenwidth screenheight 32 [SDL.SWSurface]
+       tilesData <- loadImage "bigAlphaTiles.png"
+       
+       let system = Sys screenwidth screenheight fpsm
+           current = Chunk Islands (chPosX,chPosY) land (canSize,canSize) nbrPts 0
+           player' = Player (100,100) (Being Mage2) Stop
+           world = World system scr tilesData current [] player'
+
+       let loop w = 
+            do let (t,s,fpsm) = (tileset w, screen w, fps.sys $ w)
+                   (ch,(chX,chY)) = (chunk $ w, chPos.chunk $ w)
+                   (wid,hei) = (width.sys $ w, height.sys $ w)
+                   ch' = ch { chLand = go (chLand ch)}
+                   --go v = addThings v [(2,3,Building Tower),(45,23,Building SmallCastle2),(100,80,Being Mage4)]
+                       
+               SDLP.filledPolygon s [(0,0),(fI wid,0),(fI wid,fI hei),(0,fI hei)] (getPixel 0 0 0)
+               ch' <- tileList ch t s
+               SDL.flip s
+               
+               let mov = movePlayer.addPlayer
+                   w' = mov (w {chunk = ch'}) 
+               
+               event      <- SDL.pollEvent
+               SDLF.delay fpsm
+                       
+               case event of
+                SDL.Quit -> return ()
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_LEFT _ _) -> loop $  changeDir w' Lefty
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_RIGHT _ _) -> loop $ changeDir w' Righty
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_UP _ _) -> loop $ changeDir w' Up
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_DOWN _ _) -> loop $ changeDir w' Down
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_ESCAPE _ _) -> return ()
+                SDL.KeyUp (SDL.Keysym _ _ _) -> loop $ changeDir w' Stop
+                SDL.NoEvent -> loop w'
+                _       -> loop w'
+       
+       loop world
 
 --------------------------------------------------------------------------------------------------------
 {- misc helper functions-}
@@ -61,6 +133,8 @@ whnfList xs = List.foldl' (flip seq) () xs `seq` xs
 
 fI = fromIntegral
 
+changeDir :: World -> Direction -> World
+changeDir w d =  w { player = (player w) {direct = d}}
 
 -----------------------------------------------------------------------------------------------------
 {- Vectors -}
@@ -130,6 +204,7 @@ applySurface x y src dst = SDL.blitSurface src clip dst offset
 {- Engine -}
 
 
+{-- Chunk update --}
 
 putMageIn :: Mat [[Tile]] -> Mat [[Tile]]
 putMageIn m = let tileStack = head $ m § (100,100) --[Tile]
@@ -141,7 +216,7 @@ putMageIn m = let tileStack = head $ m § (100,100) --[Tile]
 
 
 addThings :: Mat [[Tile]] -> [(Int,Int,Tile)] -> Mat [[Tile]]
-addThings m xs = runST $ do m' <- Vec.thaw (m)
+addThings m xs = runST $ do m' <- Vec.thaw m
                             let loop [] = return ()
                                 loop ((i,j,t):xs) = do let ind = i * nbrPts + j
                                                        tileStack <- GM.read m' ind
@@ -150,7 +225,25 @@ addThings m xs = runST $ do m' <- Vec.thaw (m)
                                                        loop xs
                             loop xs
                             Vec.freeze m'
-              
+
+addPlayer :: World -> World
+addPlayer w = let p = player w
+                  ((j,i),t) = (plPos p, plTiles p)
+                  l = chLand.chunk $ w
+                  ind = i * nbrPts + j
+ 
+                  newl = runST $ do l' <- Vec.thaw l
+                                    tileStack <- GM.read l' ind
+                                    let t' = [(head tileStack) ++ [t]] 
+                                    GM.write l' ind (cycle (deepseq t' t'))
+                                    Vec.freeze l'
+              in w {chunk = (chunk w){chLand = newl}}
+                            
+
+
+
+{-- Screen drawing --}
+
 applyTile :: [Tile] -> (Int,Int) -> SDL.Surface -> SDL.Surface -> IO [Bool]
 applyTile ts (x,y) src dest =
     let offset = Just SDL.Rect { SDL.rectX = x, SDL.rectY = y, SDL.rectW = 32, SDL.rectH = 32}
@@ -170,13 +263,17 @@ applyTileMat ch src dest =
 tileList :: Chunk -> SDL.Surface -> SDL.Surface -> IO Chunk
 tileList ch src dest = applyTileMat ch src dest >>= (\m' -> return m')
 
+
+{-- Movments --}
+
 moveCamera :: World -> World
 moveCamera w  = let maxBound = (chunkSize.chunk $ w) - (uncurry max) (canvasSize.chunk $ w)
                     isInBounds (i,j) = (i >= 0 && i < maxBound) && (j >= 0 && j < maxBound)
                     (chX,chY) = (chPos.chunk $ w)
-                    ch = chunk w in
+                    ch = chunk w
+                    p = player w in
                  
-                 case direct w of
+                 case direct p of
                            Stop -> w
                            Lefty  -> if isInBounds (chX - 1, chY)
                                     then w {chunk = ch {chPos = (chX-1,chY)}}
@@ -191,71 +288,26 @@ moveCamera w  = let maxBound = (chunkSize.chunk $ w) - (uncurry max) (canvasSize
                                     then w {chunk = ch {chPos = (chX,chY + 1)}}
                                     else w
 
-
-
+movePlayer :: World -> World
+movePlayer w = let maxBound = nbrPts
+                   isInBounds (i,j) = (i >= 0 && i < maxBound) && (j >= 0 && j < maxBound)
+                   (pX,pY) = (plPos.player $ w)
+                   p = player w in
+               
+               case direct p of
+                           Stop -> w
+                           Lefty  -> if isInBounds (pX - 1, pY)                                     
+                                     then w {player = p {plPos = (pX - 1, pY)}} 
+                                     else w
+                           Righty -> if isInBounds (pX + 1, pY)
+                                     then w {player = p {plPos = (pX+1,pY)}}
+                                     else w
+                           Up    -> if isInBounds (pX, pY - 1)
+                                    then w {player = p {plPos = (pX,pY - 1)}}
+                                    else w
+                           Down  -> if isInBounds (pX, pY + 1)
+                                    then w {player = p {plPos = (pX,pY + 1)}}
+                                    else w
+ 
 ----------------------------------------------------------------------------------------------------
-{- Main -}
-
-
-
-screenwidth = 1000
-screenheight = 640
-nbrPts = 200
-
-main = SDL.withInit [SDL.InitEverything] $ do
-       
-       fpsm <- SDLF.new
-       SDLF.init fpsm
-       
-       gen <- getStdGen
-       
-       let go v = addThings v [(2,3,Building Tower),(45,23,Building SmallCastle2),(100,80,Being Mage4)]
-           (oct,per,nbrSum,nbrCol) = (18, 0.2, 25, 7)
-           (seed,_) = random gen
-           --(seed,_) = random.mkStdGen $ 12
-           
-           --initial tile vector
-           land = go.putMageIn $ vmap' noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
-           
-           --width/height of displayed canvas (in tiles)
-           canSize = 19
-
-           --Starting position in chunk
-           (chPosX,chPosY) = let off = (div nbrPts 2) - (div canSize 2) in (off,off)
-       
-       args <- getArgs
-       
-       scr <- SDL.setVideoMode screenwidth screenheight 32 [SDL.SWSurface]
-       tilesData <- loadImage "bigAlphaTiles.png"
-       
-       let system = Sys screenwidth screenheight fpsm
-           current = Chunk Islands (chPosX,chPosY) land (canSize,canSize) nbrPts
-           world = World system scr tilesData current [] Stop
-
-       let loop w = 
-            do let (t,s,fpsm) = (tiles w, screen w, fps.sys $ w)
-                   (ch,(chX,chY)) = (chunk $ w, chPos.chunk $ w)
-                   (wid,hei) = (width.sys $ w, height.sys $ w)
-                   ch' = ch { chLand = go (chLand ch)}
-                   --go v = addThings v [(2,3,Building Tower),(45,23,Building SmallCastle2),(100,80,Being Mage4)]
-                       
-               SDLP.filledPolygon s [(0,0),(fI wid,0),(fI wid,fI hei),(0,fI hei)] (getPixel 0 0 0)
-               ch' <- tileList ch t s
-               SDL.flip s
-               let w' = moveCamera (w {chunk = ch'})        
-
-       	       event      <- SDL.pollEvent
-               SDLF.delay fpsm
-                       
-               case event of
-                SDL.Quit -> return ()
-                SDL.KeyDown (SDL.Keysym SDL.SDLK_LEFT _ _) -> loop $  w' {direct = Lefty}
-                SDL.KeyDown (SDL.Keysym SDL.SDLK_RIGHT _ _) -> loop $ w' {direct = Righty}
-                SDL.KeyDown (SDL.Keysym SDL.SDLK_UP _ _) -> loop $ w' {direct = Up}
-                SDL.KeyDown (SDL.Keysym SDL.SDLK_DOWN _ _) -> loop $ w' {direct = Down}
-                SDL.KeyDown (SDL.Keysym SDL.SDLK_ESCAPE _ _) -> return ()
-                SDL.KeyUp (SDL.Keysym _ _ _) -> loop $ (w {direct = Stop})
-                SDL.NoEvent -> loop w'
-                _       -> loop w'
-       
-       loop world
+     

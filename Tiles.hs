@@ -32,9 +32,20 @@ data BuildingType = Tower
                   | SmallCastle1
                   | SmallCastle2 deriving Show
 
+
+data TransportType = Boat1
+                   | Boat2
+                   | Boat3
+                   | Boat4
+                   | Boat5
+                   | Boat6
+                   | Boat7
+                   | Boat8 deriving Show
+
 data Tile = Water WaterType 
           | Land LandType
           | Being BeingType
+          | Transport TransportType
           | Building BuildingType deriving Show
 
 instance NFData Tile where rnf x = seq x ()
