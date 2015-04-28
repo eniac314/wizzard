@@ -5,8 +5,16 @@ import qualified Graphics.UI.SDL.Image as SDLI
 import Data.Bits
 import GHC.Word
 import GHC.Int
+import Helper
+import EngineTypes
+import qualified Data.Vector as Vec((!))
+import Vector
+import Tiles hiding (slow)
 
+nbrPts = 200
 
+(§) :: Mat a -> (Int, Int) -> a
+v § (r, c) = v Vec.! (r*nbrPts + c)
 
 type Point = (Double,Double)
 
@@ -34,3 +42,30 @@ applySurface x y src dst = SDL.blitSurface src clip dst offset
 
 drawBackground :: Int -> Int -> SDL.Surface -> IO Bool
 drawBackground wid hei s = SDLP.filledPolygon s [(0,0),(fromIntegral wid,0),(fromIntegral wid,fromIntegral hei),(0,fromIntegral hei)] (getPixel 0 0 0)
+
+{-- Screen rendering --}
+
+applyTile :: [Tile] -> (Int,Int) -> SDL.Surface -> SDL.Surface -> IO [Bool]
+applyTile ts (x,y) src dest =
+    let offset = Just SDL.Rect { SDL.rectX = x, SDL.rectY = y, SDL.rectW = 32, SDL.rectH = 32}
+        tileRects = map getTileCoord ts
+    in sequence $ map (\tr -> SDL.blitSurface src tr dest offset) tileRects
+
+applyTileMat :: World -> SDL.Surface -> SDL.Surface -> IO ()
+applyTileMat w src dest = 
+  let m = getTiles w
+      (x,y) = getCanvasPos w
+      (canW,canH) = getCanvasSize w in
+
+  do sequence $ [ applyTile (head (m § (i,j))) (32*(j-x), 32*(i-y)) src dest | i <- [y..(y+canH)], j <- [x..(x+canW)]]
+     return ()
+
+applyPlayer :: World -> SDL.Surface -> SDL.Surface -> IO [Bool]
+applyPlayer w src dest =
+	let t = head.getPlayerTiles $ w
+	    (plX,plY) = getPlayerPos w
+	    (canX,canY) = getCanvasPos w
+	    l = getTiles w
+	    tileStack = head (l § (plY,plX))
+	    (x',y') = (plX - canX, plY - canY)
+	in applyTile (tileStack ++ t) (32*x',32*y') src dest

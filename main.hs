@@ -12,15 +12,15 @@ import Tiles hiding (slow)
 import Helper
 import EngineTypes
 import Vector
-import Graphics
+import Graphics hiding (nbrPts)
 import Engine hiding (nbrPts)
 
 {-# LANGUAGE BangPatterns #-}
 
 {- Main -}
 
-screenwidth = 1000
-screenheight = 640
+screenwidth = 672
+screenheight = 672
 nbrPts = 200
 
 main = SDL.withInit [SDL.InitEverything] $ do
@@ -36,42 +36,46 @@ main = SDL.withInit [SDL.InitEverything] $ do
            --(seed,_) = random.mkStdGen $ 12
            
            --initial tile vector
-           land = go.putMageIn $ vmap' noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
+           land = go $ vmap' noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
            
            --width/height of displayed canvas (in tiles)
-           canSize = 19
+           canSize = 20
 
            --Starting position in chunk
-           (chPosX,chPosY) = let off = (div nbrPts 2) - (div canSize 2) in (off,off)
+           (canPosX,canPosY) = let off = (div nbrPts 2) - (div canSize 2) in (off,off)
        
        args <- getArgs
        
        scr <- SDL.setVideoMode screenwidth screenheight 32 [SDL.SWSurface]
-       tilesData <- loadImage "bigAlphaTiles.png"
+       tilesData <- loadImage "./images/bigAlphaTiles.png"
        
        let system = Sys screenwidth screenheight fpsm
-           current = Chunk Islands (chPosX,chPosY) land (canSize,canSize) nbrPts 0
-           player' = Player (100,100) (Being Mage2) Stop
+           current = Chunk Islands (canPosX,canPosY) land (canSize,canSize) nbrPts 0
+           player' = Player (100,100) maje Stop
            world = World system scr tilesData current [] player'
 
        let loop w = 
             do let (t,s,fpsm) = (tileset w, screen w, fps.sys $ w)
-                   (ch,(chX,chY)) = (chunk $ w, chPos.chunk $ w)
+                   (ch,(canX,canY)) = (chunk $ w, getCanvasPos $ w)
                    (wid,hei) = (width.sys $ w, height.sys $ w)
-                   ch' = ch { chLand = go (chLand ch)}
-                   --go v = addThings v [(2,3,Building Tower),(45,23,Building SmallCastle2),(100,80,Being Mage4)]
+                   
                
+               {- Rendering -}
+
                drawBackground wid hei s       
-               ch' <- tileList ch t s
+               applyTileMat w t s
+               applyPlayer w t s
                SDL.flip s
                
-               let mov = movePlayer.addPlayer
-                   w' = mov (w {chunk = ch'}) 
+
+               {- World Update -}
+               let nextFrames = updateTail.updatePlayerTiles 
+               let w' = moveCamera.movePlayer.nextFrames $ w
                
                event      <- SDL.pollEvent
                SDLF.delay fpsm
 
-               printPlayerData w'
+               --printPlayerData w'
                        
                case event of
                 SDL.Quit -> return ()

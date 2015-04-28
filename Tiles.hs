@@ -56,8 +56,8 @@ slow n [] = []
 slow n (x:xs) = go n x [] ++ (slow n xs) where go 0 _ xs = xs
                                                go n x xs = go (n-1) x (x:xs)
 
-getTile :: Tile -> Maybe SDL.Rect
-getTile t = 
+getTileCoord :: Tile -> Maybe SDL.Rect
+getTileCoord t = 
   let (i,j) = case t of Water Shallow -> (0,3)
                         Water Deep1 -> (0,1)
                         Water Deep2 -> (0,2)
@@ -87,3 +87,9 @@ noise2Tile n | n == 0 = cycle $ slow 20 [[Water Deep2],[Water Deep1]]
              | n == 5 = cycle [[Land Forest]]
              | n == 6 = cycle [[Land LowMountain]]
              | n == 7 = cycle [[Land HighMountain1]]
+
+maje = let m1 = slow 20 [[Being Mage1]]
+           m2 = slow 10 [[Being Mage2]]
+           m3 = slow 10 [[Being Mage3]]
+           m4 = slow 10 [[Being Mage4]]
+        in cycle $ m1 ++ m2 ++ m3 ++ m4

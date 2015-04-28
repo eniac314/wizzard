@@ -18,14 +18,31 @@ whnfList xs = List.foldl' (flip seq) () xs `seq` xs
 
 fI = fromIntegral
 
-getChunkPos :: World -> (Int,Int)
-getChunkPos w = chPos.chunk $ w
+{- Chunk getters/setters -}
+getCanvasPos :: World -> (Int,Int)
+getCanvasPos w = canPos.chunk $ w
 
 getTiles :: World -> Mat [[Tile]]
 getTiles w = chLand.chunk $ w
 
+getChunkSize :: World -> Int
+getChunkSize w = chunkSize.chunk $ w
+
+getCanvasSize :: World -> (Int,Int)
+getCanvasSize w = canvasSize.chunk $ w
+
+setTile ::  World -> Mat [[Tile]] -> World
+setTile w t = w {chunk = (chunk w) {chLand = t}}
+
+setCanPos :: World -> (Int,Int) -> World
+setCanPos w (x,y) = w {chunk = (chunk w){canPos = (x,y)}} 
+
+{- Player getters/setters -}
 getPlayerPos :: World -> (Int,Int)
 getPlayerPos w = plPos.player $ w
+
+getPlayerTiles :: World -> [[Tile]]
+getPlayerTiles w = plTiles.player $ w
 
 changeDir :: World -> Direction -> World
 changeDir w d =  w { player = (player w) {direct = d}}
