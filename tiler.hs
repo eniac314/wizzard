@@ -211,7 +211,6 @@ putMageIn m = let tileStack = head $ m § (100,100) --[Tile]
 
 addThings :: Mat [[Tile]] -> [(Int,Int,Tile)] -> Mat [[Tile]]
 addThings m xs = runST $ do m' <- Vec.thaw (m)
-                            --m' <- Vec.thaw (whnfElements m)
                             let loop [] = return ()
                                 loop ((i,j,t):xs) = do let ind = i * nbrPts + j
                                                        tileStack <- GM.read m' ind
@@ -235,7 +234,6 @@ applyTileMat ch src dest =
 
   do sequence $ [ applyTile (head (m § (i,j))) (32*(j-x), 32*(i-y)) src dest | i <- [y..(y+canH)], j <- [x..(x+canW)]]
      let m' = updateTail (m) 
-     --let m' = (vmap' tail) $ m
      return ch { chLand = m' }
 
 tileList :: Chunk -> SDL.Surface -> SDL.Surface -> IO Chunk
