@@ -88,6 +88,11 @@ noise2Tile n | n == 0 = cycle $ slow 20 [[Water Deep2],[Water Deep1]]
              | n == 6 = cycle [[Land LowMountain]]
              | n == 7 = cycle [[Land HighMountain1]]
 
+isNotWalkable :: Tile -> Bool
+isNotWalkable (Land HighMountain1) = True
+isNotWalkable (Water _) = True
+isNotWalkable _ = False
+
 maje = let m1 = slow 20 [[Being Mage1]]
            m2 = slow 10 [[Being Mage2]]
            m3 = slow 10 [[Being Mage3]]

@@ -73,21 +73,23 @@ moveCamera w  = let maxBound = (chunkSize.chunk $ w) - (uncurry max) (canvasSize
 movePlayer :: World -> World
 movePlayer w = let maxBound = nbrPts
                    isInBounds (i,j) = (i >= 0 && i < maxBound) && (j >= 0 && j < maxBound)
+                   isWalkable (x,y) = not.isNotWalkable.head.head $ (l § (x,y))
+                   l = getTiles w
                    (pX,pY) = getPlayerPos w
                    p = player w in
                
                case direct p of
                            Stop -> w
-                           Lefty  -> if isInBounds (pX - 1, pY)                                     
+                           Lefty  -> if isInBounds (pX - 1, pY) && (isWalkable (pY,pX-1))                                   
                                      then w {player = p {plPos = (pX - 1, pY)}} 
                                      else w
-                           Righty -> if isInBounds (pX + 1, pY)
+                           Righty -> if isInBounds (pX + 1, pY) && (isWalkable (pY,pX+1))
                                      then w {player = p {plPos = (pX+1,pY)}}
                                      else w
-                           Up    -> if isInBounds (pX, pY - 1)
+                           Up    -> if isInBounds (pX, pY - 1) && (isWalkable (pY - 1,pX))
                                     then w {player = p {plPos = (pX,pY - 1)}}
                                     else w
-                           Down  -> if isInBounds (pX, pY + 1)
+                           Down  -> if isInBounds (pX, pY + 1) && (isWalkable (pY + 1,pX))
                                     then w {player = p {plPos = (pX,pY + 1)}}
                                     else w
  
