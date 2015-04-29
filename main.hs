@@ -27,6 +27,7 @@ main = SDL.withInit [SDL.InitEverything] $ do
        
        fpsm <- SDLF.new
        SDLF.init fpsm
+       SDL.enableKeyRepeat 200 50 -- (initial delay, delay between each key presses)
        
        gen <- getStdGen
        
@@ -84,8 +85,8 @@ main = SDL.withInit [SDL.InitEverything] $ do
                 SDL.KeyDown (SDL.Keysym SDL.SDLK_UP _ _) -> loop $ changeDir w' Up
                 SDL.KeyDown (SDL.Keysym SDL.SDLK_DOWN _ _) -> loop $ changeDir w' Down
                 SDL.KeyDown (SDL.Keysym SDL.SDLK_ESCAPE _ _) -> return ()
-                SDL.KeyUp (SDL.Keysym _ _ _) -> loop $ changeDir w' Stop
-                SDL.NoEvent -> loop w'
+                --SDL.KeyUp (SDL.Keysym _ _ _) -> loop $ changeDir w' Stop
+                SDL.NoEvent -> loop $ changeDir w' Stop
                 _       -> loop w'
        
        loop world
