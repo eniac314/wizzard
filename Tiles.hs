@@ -4,15 +4,13 @@ import qualified Graphics.UI.SDL as SDL
 
 data WaterType = Shallow
                | Deep1
-               | Deep2
-               | UpLeftDiag
-               | UpRightDiag
-               | DownLeftDiag
-               | DownRightDiag deriving Show
+               | Deep2 deriving Show
 
+               
 data LandType = Swamp
               | GrassLand
               | Bushes
+              | Dirt
               | Thicket
               | SmallTrees
               | Forest
@@ -21,7 +19,15 @@ data LandType = Swamp
               | HighMountain2
               | Rocks1
               | Rocks2 
-              | Field deriving Show
+              | Field 
+              | UpBorder
+              | DownBorder
+              | LeftBorder
+              | RightBorder
+              | UpLeftBorder
+              | UpRightBorder
+              | DownLeftBorder
+              | DownRightBorder deriving Show
 
 data BeingType  = Mage1
                 | Mage2
@@ -61,17 +67,33 @@ getTileCoord t =
   let (i,j) = case t of Water Shallow -> (0,3)
                         Water Deep1 -> (0,1)
                         Water Deep2 -> (0,2)
+
                         Land Swamp -> (0,4)
                         Land GrassLand -> (0,5)
+                        Land Bushes -> (0,6)
+                        Land Field -> (0,7)
+                        Land Thicket -> (0,8)
                         Land HighMountain1 -> (0,12)
                         Land HighMountain2 -> (0,13)
-                        Land LowMountain -> (0,10)
-                        Land SmallTrees -> (0,8)
-                        Land Forest -> (0,9)
+                        Land LowMountain -> (0,11)
+                        Land SmallTrees -> (0,9)
+                        Land Forest -> (0,10)
+                        Land Rocks1 -> (0,14)
+                        Land Rocks2 -> (0,15)
+                        Land UpBorder -> (1,16)
+                        Land DownBorder -> (1,18)
+                        Land LeftBorder -> (1,19)
+                        Land RightBorder -> (1,17)
+                        Land UpLeftBorder -> (1,20)
+                        Land UpRightBorder -> (1,21)
+                        Land DownLeftBorder -> (1,23)
+                        Land DownRightBorder -> (1,22)
+
                         Being Mage1 ->(10,0)
                         Being Mage2 ->(10,1)
                         Being Mage3 ->(10,2)
                         Being Mage4 ->(10,3)
+
                         Building SmallCastle1 -> (0,20)
                         Building SmallCastle2 -> (0,21)
                         Building Tower -> (0,27)

@@ -1,8 +1,9 @@
 module Helper where
 import EngineTypes
 import qualified Data.List as List
-import Tiles (Tile)
+import Tiles hiding (slow)
 import Vector (Mat)
+
 
 
 osc :: Int -> Int -> Int -> [Int]
@@ -51,4 +52,28 @@ printPlayerData :: World -> IO ()
 printPlayerData w = let p = player w
                         (x,y) = plPos p
                         d = direct p
-                    in print (x,y,d) 
+                    in print (x,y,d)
+
+isWater :: Tile -> Bool
+isWater (Water _) = True
+isWater _ = False
+
+isLand :: Tile -> Bool
+isLand (Land _) = True
+isLand _ = False
+
+getGround :: [[Tile]] -> Tile
+getGround (x:xs) = head x
+
+setGround :: [[Tile]] -> Tile -> [[Tile]]
+setGround ((x':xs'):xs) g = cycle [(g:xs')] 
+
+sameKind :: Tile -> Tile -> Bool
+sameKind (Water _) (Water _) = True
+sameKind (Land _) (Land _) = True
+sameKind (Being _) (Being _) = True
+sameKind (Transport _) (Transport _) = True
+sameKind _ _= False
+
+notSameKind :: Tile -> Tile -> Bool
+notSameKind t1 t2 = not $ sameKind t1 t2

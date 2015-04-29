@@ -28,6 +28,15 @@ addThings m xs = runST $ do m' <- Vec.thaw m
                             loop xs
                             Vec.freeze m'
     
+updateTiles :: Mat [[Tile]] -> [(Int,Int,[[Tile]])] -> Mat [[Tile]]
+updateTiles m xs = runST $ do m' <- Vec.thaw m
+                              let loop [] = return ()
+                                  loop ((i,j,t):xs) = do let ind = i * nbrPts + j
+                                                         GM.write m' ind t
+                                                         loop xs
+                              loop xs
+                              Vec.freeze m'
+
 updateTail ::  World -> World
 updateTail w = 
   let m  = getTiles w
@@ -43,6 +52,28 @@ updateTail w =
 updatePlayerTiles :: World -> World
 updatePlayerTiles w = let t = getPlayerTiles w
                       in w {player = (player w) {plTiles = tail t}}
+
+addBorders :: World -> World
+addBorders w = 
+  let lnd = getTiles w
+
+      addBorder t (y,x) =    
+       let (ul:u:ur:l:g:r:dl:d:dr:[]) = [getGround (lnd § (i,j)) | i <- [(y-1)..(y+1)], j <- [(x-1)..(x+1)]]
+       in if sameKind l r
+          then if sameKind u d
+               then (y,x,t)
+               else if isWater u then (y,x,setGround t (Land UpBorder)) else (y,x,setGround t (Land DownBorder)) 
+          else if isWater l 
+               then if isWater d then (y,x,setGround t (Land DownLeftBorder))
+                    else if isWater u then (y,x,setGround t (Land UpLeftBorder))
+                      else (y,x,setGround t (Land LeftBorder))
+               else if isWater d then (y,x,setGround t (Land DownRightBorder))
+                    else if isWater u then (y,x,setGround t (Land UpRightBorder))
+                      else (y,x,setGround t (Land RightBorder)) 
+  
+      changes =  [addBorder (lnd § (i,j)) (i,j) | i <- [1..(nbrPts-2)], j <- [1..(nbrPts-2)], not.isWater.getGround $ (lnd § (i,j))]
+
+  in w {chunk = (chunk w) {chLand = updateTiles lnd changes}}             
 
 {-- Movments --}
 

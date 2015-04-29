@@ -3,6 +3,7 @@ import qualified Graphics.UI.SDL as SDL
 import qualified Graphics.UI.SDL.Primitives as SDLP
 import qualified Graphics.UI.SDL.Image as SDLI
 import qualified Graphics.UI.SDL.Framerate as SDLF
+import Graphics.UI.SDL.Mixer
 import qualified Data.List as List
 import System.Random
 import System.Environment
@@ -55,6 +56,8 @@ main = SDL.withInit [SDL.InitEverything] $ do
            player' = Player (100,100) maje Stop
            world = World system scr tilesData current [] player'
 
+       --addBorders world
+
        let loop w = 
             do let (t,s,fpsm) = (tileset w, screen w, fps.sys $ w)
                    (ch,(canX,canY)) = (chunk $ w, getCanvasPos $ w)
@@ -89,4 +92,4 @@ main = SDL.withInit [SDL.InitEverything] $ do
                 SDL.NoEvent -> loop $ changeDir w' Stop
                 _       -> loop w'
        
-       loop world
+       loop (addBorders world)

@@ -19,3 +19,5 @@ git checkout br : switch to branch br
 git merge br : merge change in br to checked-out branch
 
 ref: http://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging
+
+git commit --amend: edit last commit message
