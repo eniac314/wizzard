@@ -13,8 +13,9 @@ import Tiles hiding (slow)
 import Helper
 import EngineTypes
 import Vector
-import Graphics hiding (nbrPts)
-import Engine hiding (nbrPts)
+import Graphics 
+import Engine 
+import Control.DeepSeq
 
 {-# LANGUAGE BangPatterns #-}
 
@@ -32,29 +33,31 @@ main = SDL.withInit [SDL.InitEverything] $ do
        
        gen <- getStdGen
        
-       let go v = addThings v [(2,3,Building Tower),(45,23,Building SmallCastle2),(100,80,Being Mage4)]
+       let --go v = addThings nbrPts v [(2,3,Building Tower),(45,23,Building SmallCastle2),(100,80,Being Mage4)]
            (oct,per,nbrSum,nbrCol) = (18, 0.2, 25, 7)
            (seed,_) = random gen
            --(seed,_) = random.mkStdGen $ 12
            
            --initial tile vector
-           land = go $ vmap' noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
+           land = vmap' noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
            
            --width/height of displayed canvas (in tiles)
-           canSize = 20
+           canSize = 20 
 
-           --Starting position in chunk
-           (canPosX,canPosY) = let off = (div nbrPts 2) - (div canSize 2) in (off,off)
+           (plX,plY) = let off = (div nbrPts 2) in (off,off)
+
+           --Canvas origin position in chunk
+           (canPosX,canPosY) = (plX - (div canSize 2),plY - (div canSize 2)) 
        
        args <- getArgs
        
        scr <- SDL.setVideoMode screenwidth screenheight 32 [SDL.SWSurface]
        tilesData <- loadImage "./images/bigAlphaTiles.png"
        
-       let system = Sys screenwidth screenheight fpsm
-           current = Chunk Islands (canPosX,canPosY) land (canSize,canSize) nbrPts 0
-           player' = Player (100,100) maje Stop
-           world = World system scr tilesData current [] player'
+       let !system = Sys screenwidth screenheight fpsm
+           !current = Chunk Islands (canPosX,canPosY) land (canSize,canSize) nbrPts 0
+           !player' = Player (plX,plY) maje Stop
+           !world = addBorders $ World system scr tilesData current [] player'
 
        --addBorders world
 
@@ -74,7 +77,7 @@ main = SDL.withInit [SDL.InitEverything] $ do
 
                {- World Update -}
                let nextFrames = updateTail.updatePlayerTiles 
-               let w' = moveCamera.movePlayer.nextFrames $ w
+               let w' =  moveCamera.movePlayer.nextFrames $ w
                
                event      <- SDL.pollEvent
                SDLF.delay fpsm
@@ -92,4 +95,4 @@ main = SDL.withInit [SDL.InitEverything] $ do
                 SDL.NoEvent -> loop $ changeDir w' Stop
                 _       -> loop w'
        
-       loop (addBorders world)
+       loop world

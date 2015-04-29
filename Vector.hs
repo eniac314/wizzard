@@ -12,7 +12,7 @@ type Mat a = Vec.Vector a
 --printVec v | (Vec.length $ Vec.tail v) == 0 = drop 9 $ (show $ Vec.head v)
 --           | otherwise = drop 9 $ (show $ Vec.head v) ++ '\n':printVec (Vec.tail v)
 
-
+(§) = (Vec.!)
 
 whnfElements :: Vec.Vector a -> Vec.Vector a
 whnfElements v = Vec.foldl' (flip seq) () v `seq` v

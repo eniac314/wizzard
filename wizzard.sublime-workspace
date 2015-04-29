@@ -5,7 +5,39 @@
 		[
 			[
 				"get",
-				"getTiles"
+				"getChunkSize"
+			],
+			[
+				"ch",
+				"chunk"
+			],
+			[
+				"add",
+				"addBorders"
+			],
+			[
+				"update",
+				"updateTiles"
+			],
+			[
+				"set",
+				"setGround"
+			],
+			[
+				"not",
+				"notSameKind"
+			],
+			[
+				"u",
+				"UpRightDiag"
+			],
+			[
+				"R",
+				"Rocks2"
+			],
+			[
+				"Roc",
+				"Rocks1"
 			],
 			[
 				"pl",
@@ -26,10 +58,6 @@
 			[
 				"app",
 				"applyTile"
-			],
-			[
-				"ch",
-				"chLand"
 			],
 			[
 				"print",
@@ -98,10 +126,6 @@
 			[
 				"w",
 				"whnfElements"
-			],
-			[
-				"add",
-				"add1Thing"
 			],
 			[
 				"Ma",
@@ -347,7 +371,7 @@
 			"file": "main.hs",
 			"settings":
 			{
-				"buffer_size": 3253,
+				"buffer_size": 3413,
 				"line_ending": "Unix"
 			}
 		},
@@ -355,7 +379,39 @@
 			"file": "Engine.hs",
 			"settings":
 			{
-				"buffer_size": 4457,
+				"buffer_size": 6143,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Graphics.hs",
+			"settings":
+			{
+				"buffer_size": 2767,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Helper.hs",
+			"settings":
+			{
+				"buffer_size": 1988,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Vector.hs",
+			"settings":
+			{
+				"buffer_size": 1029,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Tiles.hs",
+			"settings":
+			{
+				"buffer_size": 4092,
 				"line_ending": "Unix"
 			}
 		},
@@ -368,42 +424,10 @@
 			}
 		},
 		{
-			"file": "Graphics.hs",
-			"settings":
-			{
-				"buffer_size": 2787,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "Helper.hs",
-			"settings":
-			{
-				"buffer_size": 1422,
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"file": "Noise.hs",
 			"settings":
 			{
 				"buffer_size": 4081,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "Tiles.hs",
-			"settings":
-			{
-				"buffer_size": 3299,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "Vector.hs",
-			"settings":
-			{
-				"buffer_size": 1016,
 				"line_ending": "Unix"
 			}
 		}
@@ -451,6 +475,7 @@
 	},
 	"file_history":
 	[
+		"/home/fayong/prog/Haskell/wizzard/noise maker/noise.hs",
 		"/home/fayong/prog/Haskell/wizzard/alphatiles.xcf",
 		"/home/fayong/prog/Haskell/wizzard/Tiles.hs",
 		"/home/fayong/prog/Haskell/wizzard/Noise.hs",
@@ -499,9 +524,10 @@
 	},
 	"find_in_files":
 	{
-		"height": 0.0,
+		"height": 96.0,
 		"where_history":
 		[
+			""
 		]
 	},
 	"find_state":
@@ -509,6 +535,22 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"n",
+			"n ",
+			"200",
+			"198",
+			"199",
+			"200",
+			"addT",
+			"§",
+			"nbrPt",
+			"§",
+			"nbrPts",
+			"§",
+			"nbrP",
+			"addThi",
+			"addThi		",
+			"|",
 			"chPos",
 			"chY",
 			"chX",
@@ -579,6 +621,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"Land",
 			"canPos",
 			"canY",
 			"canX",
@@ -610,15 +653,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3253,
+						"buffer_size": 3413,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1257,
-								1257
+								2421,
+								2422
 							]
 						],
 						"settings":
@@ -628,7 +671,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 285.0,
+						"translation.y": 1311.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -640,15 +683,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4457,
+						"buffer_size": 6143,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3224,
-								3224
+								5386,
+								5386
 							]
 						],
 						"settings":
@@ -658,14 +701,130 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1124.0,
+						"translation.y": 1311.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
+					"file": "Graphics.hs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2767,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2372,
+								2372
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Haskell/Haskell.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 50.0,
+						"translation.y": 634.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "Helper.hs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1988,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1715,
+								1715
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Haskell/Haskell.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "Vector.hs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1029,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								447,
+								447
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Haskell/Haskell.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "Tiles.hs",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4092,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1944,
+								1944
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Haskell/Haskell.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1767.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
 					"file": "EngineTypes.hs",
 					"semi_transient": false,
 					"settings":
@@ -677,8 +836,8 @@
 						"selection":
 						[
 							[
-								536,
-								536
+								699,
+								699
 							]
 						],
 						"settings":
@@ -687,71 +846,15 @@
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
-						"translation.x": 0.0,
-						"translation.y": 57.0,
+						"translation.x": -0.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
-					"file": "Graphics.hs",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2787,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2774,
-								2774
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Haskell/Haskell.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 966.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "Helper.hs",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1422,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								960,
-								960
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Haskell/Haskell.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 342.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
+					"buffer": 7,
 					"file": "Noise.hs",
 					"semi_transient": false,
 					"settings":
@@ -763,8 +866,8 @@
 						"selection":
 						[
 							[
-								0,
-								0
+								3515,
+								3515
 							]
 						],
 						"settings":
@@ -773,66 +876,8 @@
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "Tiles.hs",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3299,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2971,
-								2971
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Haskell/Haskell.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1425.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "Vector.hs",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1016,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								542,
-								542
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Haskell/Haskell.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.x": -0.0,
+						"translation.y": 1325.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 7,

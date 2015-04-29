@@ -11,10 +11,7 @@ import qualified Data.Vector as Vec((!))
 import Vector
 import Tiles hiding (slow)
 
-nbrPts = 200
 
-(§) :: Mat a -> (Int, Int) -> a
-v § (r, c) = v Vec.! (r*nbrPts + c)
 
 type Point = (Double,Double)
 
@@ -53,19 +50,21 @@ applyTile ts (x,y) src dest =
 
 applyTileMat :: World -> SDL.Surface -> SDL.Surface -> IO ()
 applyTileMat w src dest = 
-  let m = getTiles w
+  let n = getChunkSize w
+      m = getTiles w
       (x,y) = getCanvasPos w
       (canW,canH) = getCanvasSize w in
 
-  do sequence $ [ applyTile (head (m § (i,j))) (32*(j-x), 32*(i-y)) src dest | i <- [y..(y+canH)], j <- [x..(x+canW)]]
+  do sequence $ [ applyTile (head (m § (n*i+j))) (32*(j-x), 32*(i-y)) src dest | i <- [y..(y+canH)], j <- [x..(x+canW)]]
      return ()
 
 applyPlayer :: World -> SDL.Surface -> SDL.Surface -> IO [Bool]
 applyPlayer w src dest =
-	let t = head.getPlayerTiles $ w
-	    (plX,plY) = getPlayerPos w
-	    (canX,canY) = getCanvasPos w
-	    l = getTiles w
-	    tileStack = head (l § (plY,plX))
-	    (x',y') = (plX - canX, plY - canY)
-	in applyTile (tileStack ++ t) (32*x',32*y') src dest
+  let t = head.getPlayerTiles $ w
+      n = getChunkSize w
+      (plX,plY) = getPlayerPos w
+      (canX,canY) = getCanvasPos w
+      l = getTiles w
+      tileStack = head (l § (n*plY+plX))
+      (x',y') = (plX - canX, plY - canY)
+  in applyTile (tileStack ++ t) (32*x',32*y') src dest

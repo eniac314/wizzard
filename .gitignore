@@ -27,6 +27,9 @@ main
 *.log
 *.sql
 *.sqlite
+*.ps
+*.hp
+*.aux
 
 # OS generated files #
 ######################

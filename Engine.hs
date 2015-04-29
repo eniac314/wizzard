@@ -10,42 +10,43 @@ import Tiles hiding (slow)
 import Helper
 import EngineTypes
 import Vector
-import Graphics hiding (nbrPts)
+import Graphics
 
 
-nbrPts = 200
+
 
 {-- World update --}
 
-addThings :: Mat [[Tile]] -> [(Int,Int,Tile)] -> Mat [[Tile]]
-addThings m xs = runST $ do m' <- Vec.thaw m
-                            let loop [] = return ()
-                                loop ((i,j,t):xs) = do let ind = i * nbrPts + j
-                                                       tileStack <- GM.read m' ind
-                                                       let t' = [(head tileStack) ++ [t]] 
-                                                       GM.write m' ind (cycle (deepseq t' t'))
-                                                       loop xs
-                            loop xs
-                            Vec.freeze m'
-    
-updateTiles :: Mat [[Tile]] -> [(Int,Int,[[Tile]])] -> Mat [[Tile]]
-updateTiles m xs = runST $ do m' <- Vec.thaw m
+addThings :: Int-> Mat [[Tile]] -> [(Int,Int,Tile)] -> Mat [[Tile]]
+addThings n m xs = runST $ do m' <- Vec.thaw m
                               let loop [] = return ()
-                                  loop ((i,j,t):xs) = do let ind = i * nbrPts + j
-                                                         GM.write m' ind t
+                                  loop ((i,j,t):xs) = do let ind = i * n + j
+                                                         tileStack <- GM.read m' ind
+                                                         let t' = [(head tileStack) ++ [t]] 
+                                                         GM.write m' ind (cycle (deepseq t' t'))
                                                          loop xs
                               loop xs
                               Vec.freeze m'
+    
+updateTiles :: Int -> Mat [[Tile]] -> [(Int,Int,[[Tile]])] -> Mat [[Tile]]
+updateTiles n m xs = runST $ do m' <- Vec.thaw m
+                                let loop [] = return ()
+                                    loop ((i,j,t):xs) = do let ind = i * n + j
+                                                           GM.write m' ind t
+                                                           loop xs
+                                loop xs
+                                Vec.freeze m'
 
 updateTail ::  World -> World
 updateTail w = 
-  let m  = getTiles w
+  let nbr = getChunkSize w
+      m  = getTiles w
       m' = runST $ do m' <- Vec.thaw (m)
                       let loop 0 = return ()
                           loop n = do (x:xs) <- GM.read m' n
                                       deepseq x (GM.write m' n xs)
                                       loop (n-1)
-                      loop ((nbrPts*nbrPts - 1))
+                      loop ((nbr*nbr - 1))
                       Vec.freeze m'
   in setTile w m'
 
@@ -56,9 +57,10 @@ updatePlayerTiles w = let t = getPlayerTiles w
 addBorders :: World -> World
 addBorders w = 
   let lnd = getTiles w
+      n = getChunkSize w
 
       addBorder t (y,x) =    
-       let (ul:u:ur:l:g:r:dl:d:dr:[]) = [getGround (lnd § (i,j)) | i <- [(y-1)..(y+1)], j <- [(x-1)..(x+1)]]
+       let (ul:u:ur:l:g:r:dl:d:dr:[]) = [getGround (lnd § (n*i+j)) | i <- [(y-1)..(y+1)], j <- [(x-1)..(x+1)]]
        in if sameKind l r
           then if sameKind u d
                then (y,x,t)
@@ -71,9 +73,9 @@ addBorders w =
                     else if isWater u then (y,x,setGround t (Land UpRightBorder))
                       else (y,x,setGround t (Land RightBorder)) 
   
-      changes =  [addBorder (lnd § (i,j)) (i,j) | i <- [1..(nbrPts-2)], j <- [1..(nbrPts-2)], not.isWater.getGround $ (lnd § (i,j))]
+      changes =  [addBorder (lnd § (n*i+j)) (i,j) | i <- [1..(n-2)], j <- [1..(n-2)], not.isWater.getGround $ (lnd § (n*i+j))]
 
-  in w {chunk = (chunk w) {chLand = updateTiles lnd changes}}             
+  in w {chunk = (chunk w) {chLand = updateTiles n lnd changes}}             
 
 {-- Movments --}
 
@@ -102,9 +104,10 @@ moveCamera w  = let maxBound = (chunkSize.chunk $ w) - (uncurry max) (canvasSize
                                     else w
 
 movePlayer :: World -> World
-movePlayer w = let maxBound = nbrPts
+movePlayer w = let maxBound = getChunkSize w
+                   n = getChunkSize w
                    isInBounds (i,j) = (i >= 0 && i < maxBound) && (j >= 0 && j < maxBound)
-                   isWalkable (x,y) = not.isNotWalkable.head.head $ (l § (x,y))
+                   isWalkable (y,x) = not.isNotWalkable.head.head $ (l § (n*y+x))
                    l = getTiles w
                    (pX,pY) = getPlayerPos w
                    p = player w in
