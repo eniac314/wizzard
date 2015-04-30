@@ -42,7 +42,7 @@ drawBackground wid hei s = SDLP.filledPolygon s [(0,0),(fromIntegral wid,0),(fro
 
 {-- Screen rendering --}
 
-applyTile :: [Tile] -> (Int,Int) -> SDL.Surface -> SDL.Surface -> IO [Bool]
+applyTile :: TileStack -> (Int,Int) -> SDL.Surface -> SDL.Surface -> IO [Bool]
 applyTile ts (x,y) src dest =
     let offset = Just SDL.Rect { SDL.rectX = x, SDL.rectY = y, SDL.rectW = 32, SDL.rectH = 32}
         tileRects = map getTileCoord ts

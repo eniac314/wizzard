@@ -17,6 +17,7 @@ import Graphics
 
 {-- World update --}
 
+-- Takes a list of (pos,Tile) (not cyclic!) and add a new tile on top of the tile stack 
 addThings :: World -> [(Int,Int,Tile)] -> World
 addThings w xs = 
   let n = getChunkSize w
@@ -31,16 +32,41 @@ addThings w xs =
                        loop xs
                        Vec.freeze m'
   in w {chunk = (chunk w) {chLand = lnd}}
-    
-updateTiles :: Int -> Mat [[Tile]] -> [(Int,Int,[[Tile]])] -> Mat [[Tile]]
-updateTiles n m xs = runST $ do m' <- Vec.thaw m
-                                let loop [] = return ()
-                                    loop ((i,j,t):xs) = do let ind = i * n + j
-                                                           GM.write m' ind t
-                                                           loop xs
-                                loop xs
-                                Vec.freeze m'
 
+
+updateTiles :: World -> [(Int,[TileStack])] -> Bool -> World
+updateTiles w xs erase | erase = updateTiles' w xs
+                       | otherwise = updateTiles'' w xs
+
+-- Takes a list of (pos,[tileStack]) (not cyclic!) and replace cells at pos with them    
+updateTiles' :: World -> [(Int,[TileStack])] -> World
+updateTiles' w xs =
+  let n = getChunkSize w
+      m = getTiles w
+      lnd = runST $ do m' <- Vec.thaw m
+                       let loop [] = return ()
+                           loop ((ind,t):xs) = do GM.write m' ind (cycle (deepseq t t))
+                                                  loop xs
+                       loop xs
+                       Vec.freeze m'
+  in w {chunk = (chunk w) {chLand = lnd}}
+
+-- Takes a list of (pos,[tileStack]) (not cyclic!) and add tiles on top of the existing ones 
+updateTiles'' :: World -> [(Int,[TileStack])] -> World
+updateTiles'' w xs =
+  let n = getChunkSize w
+      m = getTiles w
+      lnd = runST $ do m' <- Vec.thaw m
+                       let loop [] = return ()
+                           loop ((ind,t):xs) = do oldStackList <- GM.read m' ind
+                                                  let t' = map (\ts -> (head oldStackList) ++ ts) t 
+                                                  GM.write m' ind (cycle (deepseq t' t'))
+                                                  loop xs
+                       loop xs
+                       Vec.freeze m'
+  in w {chunk = (chunk w) {chLand = lnd}}
+
+-- Goes through the whole chunk and update each cell's animation list
 updateTail ::  World -> World
 updateTail w = 
   let nbr = getChunkSize w
@@ -58,6 +84,7 @@ updatePlayerTiles :: World -> World
 updatePlayerTiles w = let t = getPlayerTiles w
                       in w {player = (player w) {plTiles = tail t}}
 
+-- remplace water edges by borders and shallow water 
 addBorders :: World -> World
 addBorders w = 
   let lnd = getTiles w
@@ -83,7 +110,27 @@ addBorders w =
   
       changes = concat [addBorder (lnd § (n*i+j)) (i,j) | i <- [1..(n-2)], j <- [1..(n-2)], not.isWater.getGround $ (lnd § (n*i+j))]
 
-  in w {chunk = (chunk w) {chLand = updateTiles n lnd changes}}             
+  in  updateTiles w  (map (\(i,j,t) -> (i*n+j,[head t])) changes) True           
+
+-- add the object represented by [TileStack] nbrValue times at places satisfaying p 
+addRandom :: World -> [TileStack]-> (Int -> Bool) -> Int -> Seed-> World
+addRandom w ts p nbrValue seed = 
+  let maxBound = getChunkSize w
+      coords = [0..(maxBound * maxBound) - 1]
+      vals = randIf coords nbrValue seed p
+      changes = map (\ind -> (ind,ts)) vals
+  in updateTiles w changes False 
+
+addFountain :: Seed -> Int -> World -> World
+addFountain s n w = 
+  let lnd = getTiles w
+      m1 = slow 5 [[Furniture Fountain1]]
+      m2 = slow 5 [[Furniture Fountain2]]
+      m3 = slow 5 [[Furniture Fountain3]]
+      m4 = slow 5 [[Furniture Fountain4]]
+      f = m1 ++ m2 ++ m3 ++ m4
+  in addRandom w f (\ind -> isLand.getGround $ (lnd § ind)) 25 s   
+-------------------------------------------------------------------------------------------------
 
 {-- Movments --}
 
@@ -136,11 +183,13 @@ movePlayer w = let maxBound = getChunkSize w
                                     else w
  
  
+
+----------------------------------------------------------------------------------------------------
+{- Misc -}
+
 testPathFinder :: (Int,Int) -> (Int,Int) -> (Int) -> World -> World
 testPathFinder s g m w = let p = pathFinder w s g m
                              changes = map (\(x,y) -> (x,y,Building Tower)) p
                              n = getChunkSize w
                              lnd = getTiles w
                          in addThings w changes
-----------------------------------------------------------------------------------------------------
-     

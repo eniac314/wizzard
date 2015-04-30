@@ -5,7 +5,7 @@ import qualified Graphics.UI.SDL as SDL
 import Vector (Mat)
 
 data Player = Player { plPos :: (Int,Int)
-                     , plTiles :: [[Tile]]
+                     , plTiles :: [TileStack]
                      , direct :: Direction
                      }
 
@@ -18,7 +18,7 @@ data ChunkType = Islands | Continent | Mountains
 
 data Chunk = Chunk { chType :: ChunkType
                    , canPos :: (Int,Int)
-                   , chLand :: Mat [[Tile]]
+                   , chLand :: Mat [TileStack]
                    , canvasSize :: (Int,Int)
                    , chunkSize :: Int
                    , chunkNbr :: Int
@@ -33,4 +33,6 @@ data World = World { sys :: Sys
                    }
 
 data Direction = Lefty | Righty| Up | Down | Stop deriving Show
+
+type Seed = Int
 

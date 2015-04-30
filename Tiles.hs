@@ -48,11 +48,19 @@ data TransportType = Boat1
                    | Boat7
                    | Boat8 deriving Show
 
+data FurnitureType = Fountain1
+                   | Fountain2
+                   | Fountain3
+                   | Fountain4 deriving Show
+
 data Tile = Water WaterType 
           | Land LandType
           | Being BeingType
           | Transport TransportType
-          | Building BuildingType deriving Show
+          | Building BuildingType
+          | Furniture FurnitureType deriving Show
+
+type TileStack = [Tile]
 
 instance NFData Tile where rnf x = seq x ()
 
@@ -97,7 +105,11 @@ getTileCoord t =
                         Building SmallCastle1 -> (0,20)
                         Building SmallCastle2 -> (0,21)
                         Building Tower -> (0,27)
-                        _              -> (0,7)	                      
+
+                        Furniture Fountain1 -> (6,24)
+                        Furniture Fountain2 -> (6,25)
+                        Furniture Fountain3 -> (6,26)
+                        Furniture Fountain4 -> (6,27)	                      
 	in Just SDL.Rect { SDL.rectX = j * 32, SDL.rectY = i * 32 , SDL.rectW = 32, SDL.rectH = 32}
 
 noise2Tile :: Int -> [[Tile]]
@@ -120,3 +132,29 @@ maje = let m1 = slow 20 [[Being Mage1]]
            m3 = slow 10 [[Being Mage3]]
            m4 = slow 10 [[Being Mage4]]
         in cycle $ m1 ++ m2 ++ m3 ++ m4
+
+
+isWater :: Tile -> Bool
+isWater (Water _) = True
+isWater _ = False
+
+isLand :: Tile -> Bool
+isLand (Land _) = True
+isLand _ = False
+
+getGround :: [TileStack] -> Tile
+getGround (x:xs) = head x
+
+setGround :: [TileStack] -> Tile -> [TileStack]
+setGround ((x':xs'):xs) g = cycle [(g:xs')] 
+
+sameKind :: Tile -> Tile -> Bool
+sameKind (Water _) (Water _) = True
+sameKind (Land _) (Land _) = True
+sameKind (Being _) (Being _) = True
+sameKind (Transport _) (Transport _) = True
+sameKind _ _= False
+
+notSameKind :: Tile -> Tile -> Bool
+notSameKind t1 t2 = not $ sameKind t1 t2
+
