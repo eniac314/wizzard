@@ -33,7 +33,7 @@ main = SDL.withInit [SDL.InitEverything] $ do
        
        gen <- getStdGen
        
-       let --go v = addThings nbrPts v [(2,3,Building Tower),(45,23,Building SmallCastle2),(100,80,Being Mage4)]
+       let go w = addThings w [(15,15,Building SmallCastle2),(45,25,Building SmallCastle2)]
            (oct,per,nbrSum,nbrCol) = (18, 0.2, 25, 7)
            (seed,_) = random gen
            --(seed,_) = random.mkStdGen $ 12
@@ -44,7 +44,7 @@ main = SDL.withInit [SDL.InitEverything] $ do
            --width/height of displayed canvas (in tiles)
            canSize = 20 
 
-           (plX,plY) = let off = (div nbrPts 2) in (off,off)
+           (plX,plY) = (25,47)--let off = (div nbrPts 2) in (off,off)
 
            --Canvas origin position in chunk
            (canPosX,canPosY) = (plX - (div canSize 2),plY - (div canSize 2)) 
@@ -57,9 +57,9 @@ main = SDL.withInit [SDL.InitEverything] $ do
        let !system = Sys screenwidth screenheight fpsm
            !current = Chunk Islands (canPosX,canPosY) land (canSize,canSize) nbrPts 0
            !player' = Player (plX,plY) maje Stop
-           !world = addBorders $ World system scr tilesData current [] player'
+           !world = go.(testPathFinder (15,15) (45,25) 3000).addBorders $ World system scr tilesData current [] player'
 
-       --addBorders world
+       --print $ take 50 $ pathFinder world (15,15) (45,25) 20000
 
        let loop w = 
             do let (t,s,fpsm) = (tileset w, screen w, fps.sys $ w)

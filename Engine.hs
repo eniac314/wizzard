@@ -17,16 +17,20 @@ import Graphics
 
 {-- World update --}
 
-addThings :: Int-> Mat [[Tile]] -> [(Int,Int,Tile)] -> Mat [[Tile]]
-addThings n m xs = runST $ do m' <- Vec.thaw m
-                              let loop [] = return ()
-                                  loop ((i,j,t):xs) = do let ind = i * n + j
-                                                         tileStack <- GM.read m' ind
-                                                         let t' = [(head tileStack) ++ [t]] 
-                                                         GM.write m' ind (cycle (deepseq t' t'))
-                                                         loop xs
-                              loop xs
-                              Vec.freeze m'
+addThings :: World -> [(Int,Int,Tile)] -> World
+addThings w xs = 
+  let n = getChunkSize w
+      m = getTiles w
+      lnd = runST $ do m' <- Vec.thaw m
+                       let loop [] = return ()
+                           loop ((i,j,t):xs) = do let ind = i * n + j
+                                                  tileStack <- GM.read m' ind
+                                                  let t' = [(head tileStack) ++ [t]] 
+                                                  GM.write m' ind (cycle (deepseq t' t'))
+                                                  loop xs
+                       loop xs
+                       Vec.freeze m'
+  in w {chunk = (chunk w) {chLand = lnd}}
     
 updateTiles :: Int -> Mat [[Tile]] -> [(Int,Int,[[Tile]])] -> Mat [[Tile]]
 updateTiles n m xs = runST $ do m' <- Vec.thaw m
@@ -58,22 +62,26 @@ addBorders :: World -> World
 addBorders w = 
   let lnd = getTiles w
       n = getChunkSize w
+      
+      addBorder t (y,x) | sameKind l r && sameKind u d = []
+                        | sameKind l r && isWater u = (y,x,up):[(y - 1, x, shallow)]
+                        | sameKind l r = (y,x,down):[(y + 1, x, shallow)]
+                        | isWater l && isWater d = (y,x,downLeft):[(y, x - 1, shallow)]
+                        | isWater l && isWater u = (y,x,upLeft):[(y, x -1 , shallow)]
+                        | isWater l = (y,x,left):[(y,x - 1,shallow)]
+                        | isWater d = (y,x,downRight):[(y, x + 1, shallow)]
+                        | isWater u = (y,x,upRight):[(y, x + 1, shallow)]
+                        | otherwise = (y,x,right):[(y, x + 1, shallow)]
 
-      addBorder t (y,x) =    
-       let (ul:u:ur:l:g:r:dl:d:dr:[]) = [getGround (lnd § (n*i+j)) | i <- [(y-1)..(y+1)], j <- [(x-1)..(x+1)]]
-       in if sameKind l r
-          then if sameKind u d
-               then (y,x,t)
-               else if isWater u then (y,x,setGround t (Land UpBorder)) else (y,x,setGround t (Land DownBorder)) 
-          else if isWater l 
-               then if isWater d then (y,x,setGround t (Land DownLeftBorder))
-                    else if isWater u then (y,x,setGround t (Land UpLeftBorder))
-                      else (y,x,setGround t (Land LeftBorder))
-               else if isWater d then (y,x,setGround t (Land DownRightBorder))
-                    else if isWater u then (y,x,setGround t (Land UpRightBorder))
-                      else (y,x,setGround t (Land RightBorder)) 
+        where (ul:u:ur:l:g:r:dl:d:dr:[]) = surroundings w (x,y)
+              (up, down) = (setGround t (Land UpBorder),setGround t (Land DownBorder))
+              (left, right) = (setGround t (Land LeftBorder),setGround t (Land RightBorder))
+              (upLeft,downLeft) = (setGround t (Land UpLeftBorder),setGround t (Land DownLeftBorder))
+              (upRight,downRight) = (setGround t (Land UpRightBorder),setGround t (Land DownRightBorder))
+              shallow = setGround t (Water Shallow)
+
   
-      changes =  [addBorder (lnd § (n*i+j)) (i,j) | i <- [1..(n-2)], j <- [1..(n-2)], not.isWater.getGround $ (lnd § (n*i+j))]
+      changes = concat [addBorder (lnd § (n*i+j)) (i,j) | i <- [1..(n-2)], j <- [1..(n-2)], not.isWater.getGround $ (lnd § (n*i+j))]
 
   in w {chunk = (chunk w) {chLand = updateTiles n lnd changes}}             
 
@@ -127,5 +135,12 @@ movePlayer w = let maxBound = getChunkSize w
                                     then w {player = p {plPos = (pX,pY + 1)}}
                                     else w
  
+ 
+testPathFinder :: (Int,Int) -> (Int,Int) -> (Int) -> World -> World
+testPathFinder s g m w = let p = pathFinder w s g m
+                             changes = map (\(x,y) -> (x,y,Building Tower)) p
+                             n = getChunkSize w
+                             lnd = getTiles w
+                         in addThings w changes
 ----------------------------------------------------------------------------------------------------
      
