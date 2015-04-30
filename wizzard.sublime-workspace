@@ -4,20 +4,52 @@
 		"selected_items":
 		[
 			[
+				"get",
+				"getGround"
+			],
+			[
+				"a",
+				"addRandom"
+			],
+			[
+				"add",
+				"addFountain"
+			],
+			[
+				"Fou",
+				"Fountain1"
+			],
+			[
+				"F",
+				"Fountain3"
+			],
+			[
+				"Fu",
+				"FurnitureType"
+			],
+			[
+				"up",
+				"updateTiles"
+			],
+			[
+				"nbr",
+				"nbrValue"
+			],
+			[
+				"to",
+				"toMap"
+			],
+			[
+				"from",
+				"fromList"
+			],
+			[
 				"ne",
 				"neighbours"
 			],
 			[
 				"ma",
 				"maxBound"
-			],
-			[
-				"add",
-				"addThings"
-			],
-			[
-				"get",
-				"getTiles"
 			],
 			[
 				"main",
@@ -34,10 +66,6 @@
 			[
 				"mai",
 				"mainList"
-			],
-			[
-				"up",
-				"upRight"
 			],
 			[
 				"dow",
@@ -136,10 +164,6 @@
 				"Vector"
 			],
 			[
-				"nbr",
-				"nbrPts"
-			],
-			[
 				"upda",
 				"update2"
 			],
@@ -182,10 +206,6 @@
 			[
 				"pu",
 				"putMageIn"
-			],
-			[
-				"from",
-				"fromMat"
 			],
 			[
 				"v",
@@ -256,10 +276,6 @@
 				"Deep2"
 			],
 			[
-				"F",
-				"Forest"
-			],
-			[
 				"H",
 				"HighMountain2"
 			],
@@ -276,10 +292,6 @@
 				"Deep2"
 			],
 			[
-				"a",
-				"applyTile"
-			],
-			[
 				"Gr",
 				"GrassLand"
 			],
@@ -290,10 +302,6 @@
 			[
 				"Lan",
 				"Landscape"
-			],
-			[
-				"to",
-				"toColorScale"
 			],
 			[
 				"fl",
@@ -395,7 +403,7 @@
 			"file": "main.hs",
 			"settings":
 			{
-				"buffer_size": 3442,
+				"buffer_size": 3532,
 				"line_ending": "Unix"
 			}
 		},
@@ -403,7 +411,7 @@
 			"file": "Engine.hs",
 			"settings":
 			{
-				"buffer_size": 7081,
+				"buffer_size": 8923,
 				"line_ending": "Unix"
 			}
 		},
@@ -411,15 +419,7 @@
 			"file": "Graphics.hs",
 			"settings":
 			{
-				"buffer_size": 2767,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/fayong/prog/Haskell/train/train2.hs",
-			"settings":
-			{
-				"buffer_size": 34128,
+				"buffer_size": 2770,
 				"line_ending": "Unix"
 			}
 		},
@@ -427,7 +427,7 @@
 			"file": "Helper.hs",
 			"settings":
 			{
-				"buffer_size": 5014,
+				"buffer_size": 5202,
 				"line_ending": "Unix"
 			}
 		},
@@ -443,7 +443,7 @@
 			"file": "Tiles.hs",
 			"settings":
 			{
-				"buffer_size": 4092,
+				"buffer_size": 5032,
 				"line_ending": "Unix"
 			}
 		},
@@ -451,7 +451,7 @@
 			"file": "EngineTypes.hs",
 			"settings":
 			{
-				"buffer_size": 1058,
+				"buffer_size": 1081,
 				"line_ending": "Unix"
 			}
 		},
@@ -567,6 +567,10 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"updateTiles",
+			"seed",
+			"updateTil",
+			"updat",
 			"pathFin",
 			"pathFinder",
 			"findNear",
@@ -684,7 +688,7 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 5,
 			"sheets":
 			[
 				{
@@ -693,15 +697,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3442,
+						"buffer_size": 3532,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1959,
-								1959
+								1056,
+								1056
 							]
 						],
 						"settings":
@@ -711,10 +715,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 855.0,
+						"translation.y": 228.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
@@ -723,15 +727,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7081,
+						"buffer_size": 8923,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3854,
-								3854
+								4856,
+								4856
 							]
 						],
 						"settings":
@@ -741,10 +745,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1482.0,
+						"translation.y": 641.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
@@ -753,15 +757,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2767,
+						"buffer_size": 2770,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2372,
-								2372
+								1757,
+								1757
 							]
 						],
 						"settings":
@@ -774,54 +778,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
 					"buffer": 3,
-					"file": "/home/fayong/prog/Haskell/train/train2.hs",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 34128,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								19594,
-								19594
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Haskell/Haskell.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 8167.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
 					"file": "Helper.hs",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5014,
+						"buffer_size": 5202,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4366,
-								4366
+								2251,
+								2251
 							]
 						],
 						"settings":
@@ -829,14 +803,14 @@
 							"syntax": "Packages/Haskell/Haskell.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 1862.0,
+						"translation.y": 855.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
+					"buffer": 4,
 					"file": "Vector.hs",
 					"semi_transient": false,
 					"settings":
@@ -864,20 +838,20 @@
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 5,
 					"file": "Tiles.hs",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4092,
+						"buffer_size": 5032,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3867,
-								3867
+								327,
+								327
 							]
 						],
 						"settings":
@@ -886,28 +860,28 @@
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
-						"translation.x": 0.0,
-						"translation.y": 1957.0,
+						"translation.x": -0.0,
+						"translation.y": 1368.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 6,
 					"file": "EngineTypes.hs",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1058,
+						"buffer_size": 1081,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								699,
-								699
+								1080,
+								1080
 							]
 						],
 						"settings":
@@ -917,14 +891,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 114.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 7,
 					"file": "Noise.hs",
 					"semi_transient": false,
 					"settings":
@@ -936,8 +910,8 @@
 						"selection":
 						[
 							[
-								3515,
-								3515
+								2750,
+								2750
 							]
 						],
 						"settings":
@@ -947,10 +921,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1517.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 3,
 					"type": "text"
 				}
 			]

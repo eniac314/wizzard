@@ -4,7 +4,11 @@ import qualified Graphics.UI.SDL as SDL
 
 data WaterType = Shallow
                | Deep1
-               | Deep2 deriving Show
+               | Deep2
+               | Swirl1
+               | Swirl2
+               | Swirl3
+               | Swirl4 deriving (Show,Eq)
 
                
 data LandType = Swamp
@@ -27,16 +31,21 @@ data LandType = Swamp
               | UpLeftBorder
               | UpRightBorder
               | DownLeftBorder
-              | DownRightBorder deriving Show
+              | DownRightBorder deriving (Show,Eq)
 
 data BeingType  = Mage1
                 | Mage2
                 | Mage3
-                | Mage4 deriving Show
+                | Mage4
+                | Shark1
+                | Shark2
+                | Shark3
+                | Shark4 deriving (Show,Eq)
 
 data BuildingType = Tower
                   | SmallCastle1
-                  | SmallCastle2 deriving Show
+                  | SmallCastle2
+                  | Shrine deriving (Show,Eq)
 
 
 data TransportType = Boat1
@@ -46,19 +55,19 @@ data TransportType = Boat1
                    | Boat5
                    | Boat6
                    | Boat7
-                   | Boat8 deriving Show
+                   | Boat8 deriving (Show,Eq)
 
 data FurnitureType = Fountain1
                    | Fountain2
                    | Fountain3
-                   | Fountain4 deriving Show
+                   | Fountain4 deriving (Show,Eq)
 
 data Tile = Water WaterType 
           | Land LandType
           | Being BeingType
           | Transport TransportType
           | Building BuildingType
-          | Furniture FurnitureType deriving Show
+          | Furniture FurnitureType deriving (Show,Eq)
 
 type TileStack = [Tile]
 
@@ -75,6 +84,10 @@ getTileCoord t =
   let (i,j) = case t of Water Shallow -> (0,3)
                         Water Deep1 -> (0,1)
                         Water Deep2 -> (0,2)
+                        Water Swirl1 -> (15,12)
+                        Water Swirl2 -> (15,13)
+                        Water Swirl3 -> (15,14)
+                        Water Swirl4 -> (15,15)
 
                         Land Swamp -> (0,4)
                         Land GrassLand -> (0,5)
@@ -101,10 +114,15 @@ getTileCoord t =
                         Being Mage2 ->(10,1)
                         Being Mage3 ->(10,2)
                         Being Mage4 ->(10,3)
+                        Being Shark1 -> (12,12)
+                        Being Shark2 -> (12,13)
+                        Being Shark3 -> (12,14)
+                        Being Shark4 -> (12,15)
 
                         Building SmallCastle1 -> (0,20)
                         Building SmallCastle2 -> (0,21)
                         Building Tower -> (0,27)
+                        Building Shrine -> (0,23)
 
                         Furniture Fountain1 -> (6,24)
                         Furniture Fountain2 -> (6,25)
@@ -113,8 +131,8 @@ getTileCoord t =
 	in Just SDL.Rect { SDL.rectX = j * 32, SDL.rectY = i * 32 , SDL.rectW = 32, SDL.rectH = 32}
 
 noise2Tile :: Int -> [[Tile]]
-noise2Tile n | n == 0 = cycle $ slow 20 [[Water Deep2],[Water Deep1]]
-             | n == 1 = cycle $ slow 20 [[Water Deep2],[Water Deep1]]
+noise2Tile n | n == 0 = cycle $ slow 20 [[Water Deep2]]
+             | n == 1 = cycle $ slow 20 [[Water Deep2]]
              | n == 2 = cycle [[Land Swamp]]
              | n == 3 = cycle [[Land GrassLand]]
              | n == 4 = cycle [[Land SmallTrees]]

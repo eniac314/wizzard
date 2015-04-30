@@ -55,14 +55,10 @@ main = SDL.withInit [SDL.InitEverything] $ do
        tilesData <- loadImage "./images/bigAlphaTiles.png"
        
        let !system = Sys screenwidth screenheight fpsm
-           !current = Chunk Islands (canPosX,canPosY) land (canSize,canSize) nbrPts 0
+           !current = Chunk Continent (canPosX,canPosY) land (canSize,canSize) nbrPts 0
            !player' = Player (plX,plY) maje Stop
-           !world = (addFountain seed 12).addBorders $ World system scr tilesData current [] player'
+           !world = (addVarious seed).addBorders $ World system scr tilesData current [] player'
        
-       --testRandom2 world
-           -- !world = addBorders $ World system scr tilesData current [] player'
-
-       --print $ pathFinder world (15,15) (45,25) 20000
 
        let loop w = 
             do let (t,s,fpsm) = (tileset w, screen w, fps.sys $ w)

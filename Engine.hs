@@ -11,6 +11,7 @@ import Helper
 import EngineTypes
 import Vector
 import Graphics
+import System.Random
 
 
 
@@ -113,23 +114,83 @@ addBorders w =
   in  updateTiles w  (map (\(i,j,t) -> (i*n+j,[head t])) changes) True           
 
 -- add the object represented by [TileStack] nbrValue times at places satisfaying p 
-addRandom :: World -> [TileStack]-> (Int -> Bool) -> Int -> Seed-> World
-addRandom w ts p nbrValue seed = 
+addRandom :: World -> [TileStack]-> (Int -> Bool) -> Int -> Seed-> Bool -> World
+addRandom w ts p nbrValue seed erase = 
   let maxBound = getChunkSize w
       coords = [0..(maxBound * maxBound) - 1]
       vals = randIf coords nbrValue seed p
       changes = map (\ind -> (ind,ts)) vals
-  in updateTiles w changes False 
+  in updateTiles w changes erase 
 
-addFountain :: Seed -> Int -> World -> World
-addFountain s n w = 
+addTower :: Int -> Seed -> World -> World
+addTower n s w = 
+  let lnd = getTiles w
+      f = [[Building Tower]]
+  in addRandom w f (\ind -> (Land LowMountain) == (getGround (lnd § ind))) n s False
+
+addShrine :: Int -> Seed -> World -> World
+addShrine n s w = 
+  let lnd = getTiles w
+      f = [[Building Shrine]]
+  in addRandom w f (\ind -> (Land LowMountain) == (getGround (lnd § ind))) n s False
+
+addSmallCastle1 :: Int -> Seed -> World -> World
+addSmallCastle1 n s w = 
+  let lnd = getTiles w
+      f = [[Building SmallCastle1]]
+  in addRandom w f (\ind -> (Land Forest) == (getGround (lnd § ind))) n s False
+
+addSmallCastle2 :: Int -> Seed -> World -> World
+addSmallCastle2 n s w = 
+  let lnd = getTiles w
+      f = [[Building SmallCastle2]]
+  in addRandom w f (\ind -> (Land SmallTrees) == (getGround (lnd § ind))) n s False
+
+addFountain :: Int -> Seed -> World -> World
+addFountain n s w = 
   let lnd = getTiles w
       m1 = slow 5 [[Furniture Fountain1]]
       m2 = slow 5 [[Furniture Fountain2]]
       m3 = slow 5 [[Furniture Fountain3]]
       m4 = slow 5 [[Furniture Fountain4]]
       f = m1 ++ m2 ++ m3 ++ m4
-  in addRandom w f (\ind -> isLand.getGround $ (lnd § ind)) 25 s   
+  in addRandom w f (\ind -> (Land GrassLand) == (getGround (lnd § ind))) n s False
+
+addShark :: Int -> Seed -> World -> World
+addShark n s w = 
+  let lnd = getTiles w
+      m1 = slow 15 [[Being Shark1]]
+      m2 = slow 15 [[Being Shark2]]
+      m3 = slow 15 [[Being Shark3]]
+      m4 = slow 25 [[Being Shark4]]
+      f = m1 ++ m2 ++ m3 ++ m4
+  in addRandom w f (\ind -> (Water Deep2) == (getGround (lnd § ind))) n s False
+
+addSwirl :: Int -> Seed -> World -> World
+addSwirl n s w = 
+  let lnd = getTiles w
+      m1 = slow 10 [[Water Swirl1]]
+      m2 = slow 10 [[Water Swirl2]]
+      m3 = slow 10 [[Water Swirl3]]
+      m4 = slow 10 [[Water Swirl4]]
+      f = m1 ++ m2 ++ m3 ++ m4
+  in addRandom w f (\ind -> (Water Deep2) == (getGround (lnd § ind))) n s False
+
+addVarious :: Seed -> World -> World
+addVarious s w = 
+  let gen = mkStdGen s
+      funcs1 = [(addShark 5), (addFountain 10)
+               ,(addSwirl 4), (addTower 5)
+               ,(addShrine 3), (addSmallCastle1 6)
+               ,(addSmallCastle2 10)]
+      
+      funcs2 [] _ = []
+      funcs2 (f:fs) g = let (s,g') = random g
+                        in (f s):funcs2 fs g'
+
+      func = List.foldl' (\f1 f2 -> f1.f2) id (funcs2 funcs1 gen)
+  in func w
+
 -------------------------------------------------------------------------------------------------
 
 {-- Movments --}
