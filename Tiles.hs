@@ -2,6 +2,8 @@ module Tiles where
 import Control.DeepSeq
 import qualified Graphics.UI.SDL as SDL
 
+data ChunkType = Islands | Continent | Mountains
+
 data WaterType = Shallow
                | Deep1
                | Deep2
@@ -23,7 +25,6 @@ data LandType = Swamp
               | HighMountain2
               | Rocks1
               | Rocks2 
-              | Field 
               | UpBorder
               | DownBorder
               | LeftBorder
@@ -92,7 +93,7 @@ getTileCoord t =
                         Land Swamp -> (0,4)
                         Land GrassLand -> (0,5)
                         Land Bushes -> (0,6)
-                        Land Field -> (0,7)
+                        Land Dirt -> (0,7)
                         Land Thicket -> (0,8)
                         Land HighMountain1 -> (0,12)
                         Land HighMountain2 -> (0,13)
@@ -130,18 +131,35 @@ getTileCoord t =
                         Furniture Fountain4 -> (6,27)	                      
 	in Just SDL.Rect { SDL.rectX = j * 32, SDL.rectY = i * 32 , SDL.rectW = 32, SDL.rectH = 32}
 
-noise2Tile :: Int -> [[Tile]]
-noise2Tile n | n == 0 = cycle $ slow 20 [[Water Deep2]]
-             | n == 1 = cycle $ slow 20 [[Water Deep2]]
-             | n == 2 = cycle [[Land Swamp]]
-             | n == 3 = cycle [[Land GrassLand]]
-             | n == 4 = cycle [[Land SmallTrees]]
-             | n == 5 = cycle [[Land Forest]]
-             | n == 6 = cycle [[Land LowMountain]]
-             | n == 7 = cycle [[Land HighMountain1]]
+
+noise2Tile :: ChunkType -> Int -> [TileStack]
+noise2Tile (Continent) n | n == 0 = cycle $ [[Water Deep2]]
+                         | n == 1 = cycle $ [[Water Deep2]]
+                         | n == 2 = cycle [[Land Swamp]]
+                         | n == 3 = cycle [[Land GrassLand]]
+                         | n == 4 = cycle [[Land SmallTrees]]
+                         | n == 5 = cycle [[Land Forest]]
+                         | n == 6 = cycle [[Land LowMountain]]
+                         | n == 7 = cycle [[Land HighMountain1]]
+
+noise2Tile (Islands) n   | elem n [0..6] = cycle $ [[Water Deep2]]
+                         | n == 7 = cycle [[Land Swamp]]
+                         | elem n [8..9] = cycle [[Land GrassLand]]
+                         | n == 10 = cycle [[Land SmallTrees]]
+                         | n == 11 = cycle [[Land Forest]]
+                         | n == 12 = cycle [[Land LowMountain]]
+                         | n == 13 = cycle [[Land HighMountain2]]
+
+noise2Tile (Mountains) n | elem n [0..6] = cycle $ [[Land HighMountain2]]
+                         | n == 7 = cycle [[Land HighMountain1]]
+                         | elem n [8..9] = cycle [[Land Rocks1]]
+                         | n == 10 = cycle [[Land SmallTrees]]
+                         | n == 11 = cycle [[Land GrassLand]]
+                         | n == 12 = cycle [[Land Dirt]]
+                         | n == 13 = cycle [[Water Deep2]]
 
 isNotWalkable :: Tile -> Bool
-isNotWalkable (Land HighMountain1) = True
+isNotWalkable (Land HighMountain2) = True
 isNotWalkable (Water _) = True
 isNotWalkable _ = False
 

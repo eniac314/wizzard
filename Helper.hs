@@ -2,10 +2,11 @@ module Helper where
 import EngineTypes
 import qualified Data.List as List
 import Tiles hiding (slow)
-import Vector (Mat,(§))
+import Vector (Mat,(§),vmap')
 import qualified Data.Map.Strict as Map
 import System.Random
 import Data.Maybe (fromJust)
+import Noise (noiseMat)
 
 
 
@@ -81,6 +82,14 @@ surroundings :: World -> (Int,Int) -> [Tile]
 surroundings w (x,y) = let lnd = getTiles w
                            n = getChunkSize w
                        in [getGround (lnd § (n*i+j)) | i <- [(y-1)..(y+1)], j <- [(x-1)..(x+1)]]
+
+
+makeLand :: ChunkType -> Int -> Seed -> Mat [TileStack]
+makeLand (Continent) n s = vmap' (noise2Tile Continent) (noiseMat 18 0.2 n 25 7 s)
+makeLand (Islands) n s = vmap' (noise2Tile Islands) (noiseMat 8 0.2 n 20 13 s)
+makeLand (Mountains) n s = vmap' (noise2Tile Mountains) (noiseMat 8 0.2 n 20 13 s)
+
+
 ---------------------------------------------------------------------------------------------------
 {- Path Finder -}
 

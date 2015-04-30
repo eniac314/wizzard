@@ -14,7 +14,7 @@ data Sys = Sys { width :: Int
                , fps :: SDLF.FPSManager
                }
 
-data ChunkType = Islands | Continent | Mountains
+
 
 data Chunk = Chunk { chType :: ChunkType
                    , canPos :: (Int,Int)

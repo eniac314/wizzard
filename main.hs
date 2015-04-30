@@ -24,7 +24,7 @@ import Control.DeepSeq
 screenwidth = 672
 screenheight = 672
 nbrPts = 200
-
+chunkType = Continent
 main = SDL.withInit [SDL.InitEverything] $ do
        
        fpsm <- SDLF.new
@@ -34,12 +34,11 @@ main = SDL.withInit [SDL.InitEverything] $ do
        gen <- getStdGen
        
        let --go w = addThings w [(15,15,Building SmallCastle2),(45,25,Building SmallCastle2)]
-           (oct,per,nbrSum,nbrCol) = (18, 0.2, 25, 7)
            (seed,_) = random gen
            --(seed,_) = random.mkStdGen $ 12
            
            --initial tile vector
-           land = vmap' noise2Tile (noiseMat oct per nbrPts nbrSum nbrCol seed)
+           land = makeLand chunkType nbrPts seed
            
            --width/height of displayed canvas (in tiles)
            canSize = 20 
@@ -55,7 +54,7 @@ main = SDL.withInit [SDL.InitEverything] $ do
        tilesData <- loadImage "./images/bigAlphaTiles.png"
        
        let !system = Sys screenwidth screenheight fpsm
-           !current = Chunk Continent (canPosX,canPosY) land (canSize,canSize) nbrPts 0
+           !current = Chunk chunkType (canPosX,canPosY) land (canSize,canSize) nbrPts 0
            !player' = Player (plX,plY) maje Stop
            !world = (addVarious seed).addBorders $ World system scr tilesData current [] player'
        
