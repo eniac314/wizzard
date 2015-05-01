@@ -149,7 +149,3 @@ pathFinder w start@(i1,j1) goal@(i2,j2) maxSteps =
         neighbours (i,j,n) = [(i-1,j,n+1),(i,j-1,n+1),(i+1,j,n+1),(i,j+1,n+1)]
         
 
-        
-        
-        
-

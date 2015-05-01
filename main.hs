@@ -14,7 +14,8 @@ import Helper
 import EngineTypes
 import Vector
 import Graphics 
-import Engine 
+import Engine
+import WorldUpdates
 import Control.DeepSeq
 
 {-# LANGUAGE BangPatterns #-}
@@ -70,6 +71,7 @@ main = SDL.withInit [SDL.InitEverything] $ do
                drawBackground wid hei s       
                applyTileMat w t s
                applyPlayer w t s
+               --drawAlphaPoly (0,0) wid hei (0,0,150,100) s
                SDL.flip s
                
 

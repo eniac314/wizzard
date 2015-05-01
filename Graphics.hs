@@ -13,7 +13,10 @@ import Tiles hiding (slow)
 
 
 
-type Point = (Double,Double)
+type Point = (Int16,Int16)
+type Width = Int
+type Height = Int
+type Pixel = (Word8,Word8,Word8,Word8)
 
 
 surfaceSize :: SDL.Surface -> (Int,Int)
@@ -23,8 +26,13 @@ getPixel :: Word8 -> Word8 -> Word8 -> SDL.Pixel
 getPixel r g b = SDL.Pixel $ (shiftL (fi r) 24 .|. shiftL (fi g) 16 .|. shiftL (fi b) 8 .|. (fi 255)) where 
   fi a = fromIntegral a
 
+getAlphaPixel :: Word8 -> Word8 -> Word8 ->  Word8 -> SDL.Pixel
+getAlphaPixel r g b a = SDL.Pixel $ (shiftL (fi r) 24 .|. shiftL (fi g) 16 .|. shiftL (fi b) 8 .|. (fi a)) where 
+  fi n = fromIntegral n
+
+
 pixelsToScreen :: [Point] -> SDL.Surface -> SDL.Pixel -> [IO Bool]
-pixelsToScreen xs s p = map (\(x,y) -> SDLP.pixel s (fromIntegral.round $ x) (fromIntegral.round $ y) p) xs
+pixelsToScreen xs s p = map (\(x,y) -> SDLP.pixel s  x y p) xs
 
 linesToSur :: [((Int,Int),(Int,Int))] -> SDL.Surface -> SDL.Pixel -> [IO Bool]
 linesToSur xs s p = map (\((x1,y1),(x2,y2)) -> SDLP.line s (fromIntegral x1) (fromIntegral y1) (fromIntegral x2) (fromIntegral y2) p) xs
@@ -37,8 +45,12 @@ applySurface x y src dst = SDL.blitSurface src clip dst offset
  where offset = Just SDL.Rect { SDL.rectX = x, SDL.rectY = y, SDL.rectW = 0, SDL.rectH = 0 }
        clip = Just SDL.Rect { SDL.rectX = 0, SDL.rectY = 0, SDL.rectW = fst $ surfaceSize src, SDL.rectH = snd $ surfaceSize src }
 
-drawBackground :: Int -> Int -> SDL.Surface -> IO Bool
+drawBackground :: Width -> Height -> SDL.Surface -> IO Bool
 drawBackground wid hei s = SDLP.filledPolygon s [(0,0),(fromIntegral wid,0),(fromIntegral wid,fromIntegral hei),(0,fromIntegral hei)] (getPixel 0 0 0)
+
+drawAlphaPoly :: Point -> Width -> Height -> Pixel -> SDL.Surface -> IO Bool
+drawAlphaPoly (x,y) wid hei (r,g,b,a) s = 
+  SDLP.filledPolygon s [(x,y),(fromIntegral wid,y),(fromIntegral wid,fromIntegral hei),(x,fromIntegral hei)] (getAlphaPixel r g b a)
 
 {-- Screen rendering --}
 
