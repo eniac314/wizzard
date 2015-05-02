@@ -2,6 +2,7 @@ module Graphics where
 import qualified Graphics.UI.SDL as SDL
 import qualified Graphics.UI.SDL.Primitives as SDLP
 import qualified Graphics.UI.SDL.Image as SDLI
+import Control.Monad
 import Data.Bits
 import GHC.Word
 import GHC.Int
@@ -67,8 +68,8 @@ applyTileMat w src dest =
       (x,y) = getCanvasPos w
       (canW,canH) = getCanvasSize w in
 
-  do sequence $ [ applyTile (head (m § (n*i+j))) (32*(j-x), 32*(i-y)) src dest | i <- [y..(y+canH)], j <- [x..(x+canW)]]
-     return ()
+  do sequence $  [ applyTile (head (m § (n*i+j))) (32*(j-x), 32*(i-y)) src dest | i <- [y..(y+canH)], j <- [x..(x+canW)]]
+     return () 
 
 applyPlayer :: World -> SDL.Surface -> SDL.Surface -> IO [Bool]
 applyPlayer w src dest =

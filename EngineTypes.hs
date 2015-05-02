@@ -4,7 +4,7 @@ import qualified Graphics.UI.SDL.Framerate as SDLF
 import qualified Graphics.UI.SDL as SDL
 import Vector (Mat)
 
-data Player = Player { plPos :: (Int,Int)
+data Avatar = Avatar { plPos :: (Int,Int)
                      , plTiles :: [TileStack]
                      , direct :: Direction
                      }
@@ -29,7 +29,7 @@ data World = World { sys :: Sys
                    , tileset :: SDL.Surface
                    , chunk :: Chunk
                    , chunks :: [Chunk]
-                   , player :: Player
+                   , player :: Avatar
                    }
 
 data Direction = Lefty | Righty| Up | Down | Stop deriving Show

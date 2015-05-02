@@ -3,7 +3,7 @@ import qualified Graphics.UI.SDL as SDL
 import qualified Graphics.UI.SDL.Primitives as SDLP
 import qualified Graphics.UI.SDL.Image as SDLI
 import qualified Graphics.UI.SDL.Framerate as SDLF
-import Graphics.UI.SDL.Mixer
+import qualified Graphics.UI.SDL.Mixer as SDLM
 import qualified Data.List as List
 import System.Random
 import System.Environment
@@ -17,8 +17,15 @@ import Graphics
 import Engine
 import WorldUpdates
 import Control.DeepSeq
+--import Euterpea
 
 {-# LANGUAGE BangPatterns #-}
+
+--t251 :: Music Pitch
+--t251 = let dMinor = d 4 wn :=: f 4 wn :=: a 4 wn
+--           gMajor = g 4 wn :=: b 4 wn :=: d 5 wn
+--           cMajor = c 4 bn :=: e 4 bn :=: g 4 bn
+--       in dMinor :+: gMajor :+: cMajor
 
 {- Main -}
 
@@ -56,7 +63,7 @@ main = SDL.withInit [SDL.InitEverything] $ do
        
        let !system = Sys screenwidth screenheight fpsm
            !current = Chunk chunkType (canPosX,canPosY) land (canSize,canSize) nbrPts 0
-           !player' = Player (plX,plY) maje Stop
+           !player' = Avatar (plX,plY) maje Stop
            !world = (addVarious seed).addBorders $ World system scr tilesData current [] player'
        
 
@@ -71,7 +78,7 @@ main = SDL.withInit [SDL.InitEverything] $ do
                drawBackground wid hei s       
                applyTileMat w t s
                applyPlayer w t s
-               --drawAlphaPoly (0,0) wid hei (0,0,150,100) s
+               --forM_ [1..100] (\i -> drawAlphaPoly (0,0) wid hei (0,0,150,i) s >> SDL.flip s >> SDL.delay 10)
                SDL.flip s
                
 
@@ -90,9 +97,11 @@ main = SDL.withInit [SDL.InitEverything] $ do
                 SDL.KeyDown (SDL.Keysym SDL.SDLK_RIGHT _ _) -> loop $ changeDir w' Righty
                 SDL.KeyDown (SDL.Keysym SDL.SDLK_UP _ _) -> loop $ changeDir w' Up
                 SDL.KeyDown (SDL.Keysym SDL.SDLK_DOWN _ _) -> loop $ changeDir w' Down
+                SDL.KeyDown (SDL.Keysym SDL.SDLK_SPACE _ _) -> loop w'
                 SDL.KeyDown (SDL.Keysym SDL.SDLK_ESCAPE _ _) -> return ()
                 --SDL.KeyUp (SDL.Keysym _ _ _) -> loop $ changeDir w' Stop
                 SDL.NoEvent -> loop $ changeDir w' Stop
                 _       -> loop w'
+       
        
        loop world
