@@ -72,7 +72,7 @@ randIf source nbrVal seed p =
     let index = toMap source
         gen = mkStdGen seed
         vals = (randomRs (0,(length source) - 1) gen)
-    in take nbrVal $ List.filter p [fromJust (Map.lookup v index) | v <- vals]
+    in take nbrVal $ List.filter p [index Map.! v | v <- vals]
 
 
 toMap :: [a] -> (Map.Map Int a)
