@@ -7,7 +7,12 @@
 *.o
 *.so
 *.hi
+
 main
+wizzard
+wizzard.sublime-project
+wizzard.sublime-workspace
+.cabal-sandbox
 
 # Packages #
 ############

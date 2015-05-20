@@ -1,6 +1,7 @@
 ## General:
 chercher A* search algo
-
+function pour generer des paysages différents en utilisant
+des ratios pour les types de terrain.
 
 ## noise.hs:
 

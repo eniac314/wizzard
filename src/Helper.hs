@@ -14,16 +14,16 @@ import Noise (noiseMat)
 
 {- Chunk getters/setters -}
 getCanvasPos :: World -> (Int,Int)
-getCanvasPos w = canPos.chunk $ w
+getCanvasPos = canPos . chunk
 
 getTiles :: World -> Mat [[Tile]]
-getTiles w = chLand.chunk $ w
+getTiles = chLand . chunk 
 
 getChunkSize :: World -> Int
-getChunkSize w = chunkSize.chunk $ w
+getChunkSize = chunkSize . chunk 
 
 getCanvasSize :: World -> (Int,Int)
-getCanvasSize w = canvasSize.chunk $ w
+getCanvasSize = canvasSize . chunk
 
 setTile ::  World -> Mat [TileStack] -> World
 setTile w t = w {chunk = (chunk w) {chLand = t}}
@@ -33,10 +33,10 @@ setCanPos w (x,y) = w {chunk = (chunk w){canPos = (x,y)}}
 
 {- Player getters/setters -}
 getPlayerPos :: World -> (Int,Int)
-getPlayerPos w = plPos.player $ w
+getPlayerPos = plPos . player 
 
 getPlayerTiles :: World -> [TileStack]
-getPlayerTiles w = plTiles.player $ w
+getPlayerTiles = plTiles . player
 
 changeDir :: World -> Direction -> World
 changeDir w d =  w { player = (player w) {direct = d}}
