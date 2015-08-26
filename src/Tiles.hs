@@ -128,8 +128,8 @@ getTileCoord t =
                         Furniture Fountain1 -> (6,24)
                         Furniture Fountain2 -> (6,25)
                         Furniture Fountain3 -> (6,26)
-                        Furniture Fountain4 -> (6,27)	                      
-	in Just SDL.Rect { SDL.rectX = j * 32, SDL.rectY = i * 32 , SDL.rectW = 32, SDL.rectH = 32}
+                        Furniture Fountain4 -> (6,27)
+        in Just SDL.Rect { SDL.rectX = j * 32, SDL.rectY = i * 32 , SDL.rectW = 32, SDL.rectH = 32}
 
 
 noise2Tile :: ChunkType -> Int -> [TileStack]

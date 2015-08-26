@@ -23,6 +23,9 @@ noise2d (x, y) =
         j = (n * (n * n * 15731 + 789221) + 1376312589) .&. 0x7fffffff
     in  (2.0 - (fromIntegral j / 1073741824.0))/2
 
+-- a b are values on the y axis for two consecutives integers, (say x1, x2) and
+-- x is the distance from x1
+  
 interpolate :: Double -> Double -> Double -> Double
 interpolate a b x = let ft = x * pi
                         f = (1 - cos(ft)) * 0.5
