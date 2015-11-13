@@ -1,7 +1,7 @@
 module EngineTypes where
 import Tiles
-import qualified Graphics.UI.SDL.Framerate as SDLF
-import qualified Graphics.UI.SDL as SDL
+import Foreign.C.Types
+import SDL
 import Vector (Mat)
 
 data Avatar = Avatar { plPos :: (Int,Int)
@@ -11,7 +11,7 @@ data Avatar = Avatar { plPos :: (Int,Int)
 
 data Sys = Sys { width :: Int
                , height :: Int
-               , fps :: SDLF.FPSManager
+               --, fps :: SDLF.FPSManager
                }
 
 
@@ -25,8 +25,8 @@ data Chunk = Chunk { chType :: ChunkType
                    }
 
 data World = World { sys :: Sys
-                   , screen :: SDL.Surface
-                   , tileset :: SDL.Surface
+                   , screen :: Renderer
+                   , tileset :: Texture
                    , chunk :: Chunk
                    , chunks :: [Chunk]
                    , player :: Avatar

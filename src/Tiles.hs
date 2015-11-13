@@ -1,6 +1,6 @@
 module Tiles where
 import Control.DeepSeq
-import qualified Graphics.UI.SDL as SDL
+import Foreign.C.Types
 
 data ChunkType = Islands | Continent | Mountains
 
@@ -80,7 +80,7 @@ slow n [] = []
 slow n (x:xs) = go n x [] ++ (slow n xs) where go 0 _ xs = xs
                                                go n x xs = go (n-1) x (x:xs)
 
-getTileCoord :: Tile -> Maybe SDL.Rect
+getTileCoord :: Tile -> (CInt,CInt)
 getTileCoord t = 
   let (i,j) = case t of Water Shallow -> (0,3)
                         Water Deep1 -> (0,1)
@@ -129,7 +129,7 @@ getTileCoord t =
                         Furniture Fountain2 -> (6,25)
                         Furniture Fountain3 -> (6,26)
                         Furniture Fountain4 -> (6,27)
-        in Just SDL.Rect { SDL.rectX = j * 32, SDL.rectY = i * 32 , SDL.rectW = 32, SDL.rectH = 32}
+        in (j*32,i*32) 
 
 
 noise2Tile :: ChunkType -> Int -> [TileStack]

@@ -12,6 +12,7 @@ import Noise (noiseMat)
 
 
 
+
 {- Chunk getters/setters -}
 getCanvasPos :: World -> (Int,Int)
 getCanvasPos = canPos . chunk
@@ -116,7 +117,7 @@ pathFinder w start@(i1,j1) goal@(i2,j2) maxSteps =
                                           cand' = prune cand ml
                                       in if any (\(a,b,n) -> (a,b) == goal) cand
                                          then (i2,j2,n+1):ml
-                             	         else computeMainList (n-1) (cand' ++ ml) (xs ++ cand')
+                                         else computeMainList (n-1) (cand' ++ ml) (xs ++ cand')
         
         -- goes though mainlist from goal to start, removing all superfluous cells   
         -- returns the path in correct order (start -> goal)
