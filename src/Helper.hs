@@ -90,7 +90,6 @@ makeLand (Continent) n s = vmap' (noise2Tile Continent) (noiseMat 18 0.2 n 25 7 
 makeLand (Islands) n s = vmap' (noise2Tile Islands) (noiseMat 8 0.2 n 20 13 s)
 makeLand (Mountains) n s = vmap' (noise2Tile Mountains) (noiseMat 8 0.2 n 20 13 s)
 
-
 ---------------------------------------------------------------------------------------------------
 {- Path Finder -}
 
