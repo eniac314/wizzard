@@ -12,6 +12,7 @@ import Noise (noiseMat)
 
 
 
+
 {- Chunk getters/setters -}
 getCanvasPos :: World -> (Int,Int)
 getCanvasPos = canPos . chunk
@@ -89,7 +90,6 @@ makeLand (Continent) n s = vmap' (noise2Tile Continent) (noiseMat 18 0.2 n 25 7 
 makeLand (Islands) n s = vmap' (noise2Tile Islands) (noiseMat 8 0.2 n 20 13 s)
 makeLand (Mountains) n s = vmap' (noise2Tile Mountains) (noiseMat 8 0.2 n 20 13 s)
 
-
 ---------------------------------------------------------------------------------------------------
 {- Path Finder -}
 
@@ -116,7 +116,7 @@ pathFinder w start@(i1,j1) goal@(i2,j2) maxSteps =
                                           cand' = prune cand ml
                                       in if any (\(a,b,n) -> (a,b) == goal) cand
                                          then (i2,j2,n+1):ml
-                             	         else computeMainList (n-1) (cand' ++ ml) (xs ++ cand')
+                                         else computeMainList (n-1) (cand' ++ ml) (xs ++ cand')
         
         -- goes though mainlist from goal to start, removing all superfluous cells   
         -- returns the path in correct order (start -> goal)

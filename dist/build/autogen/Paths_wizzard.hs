@@ -17,7 +17,7 @@ version = Version [0,1,0,0] []
 bindir, libdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "/home/fayong/prog/Haskell/wizzard/.cabal-sandbox/bin"
-libdir     = "/home/fayong/prog/Haskell/wizzard/.cabal-sandbox/lib/x86_64-linux-ghc-7.10.2/wizzard-0.1.0.0"
+libdir     = "/home/fayong/prog/Haskell/wizzard/.cabal-sandbox/lib/x86_64-linux-ghc-7.10.2/wizzard-0.1.0.0-LG5JQTqX16I9eumtKh1I3x"
 datadir    = "/home/fayong/prog/Haskell/wizzard/.cabal-sandbox/share/x86_64-linux-ghc-7.10.2/wizzard-0.1.0.0"
 libexecdir = "/home/fayong/prog/Haskell/wizzard/.cabal-sandbox/libexec"
 sysconfdir = "/home/fayong/prog/Haskell/wizzard/.cabal-sandbox/etc"
